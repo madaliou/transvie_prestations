@@ -1,0 +1,16 @@
+# Ignorer les fichiers Node.js et Next.js génériques
+/node_modules/
+/yarn.lock
+/.next/
+/npm-debug.log
+/yarn-error.log
+/.env
+/.vscode/
+
+# Ignorer les fichiers de logs générés par l'application backend
+/backend/logs/
+/backend/.env
+
+# Ignorer les fichiers spécifiques aux éditeurs
+.idea/
+.DS_Store

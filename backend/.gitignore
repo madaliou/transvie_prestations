@@ -1,0 +1,4 @@
+node_modules
+# Ignorer les fichiers de logs
+logs/
+.env
