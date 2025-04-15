@@ -4,6 +4,7 @@ npm-debug.log
 yarn-error.log
 
 # Next.js (frontend)
+**/.next/
 .next/
 out/
 dist/
