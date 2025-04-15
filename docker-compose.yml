@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql-transvie
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: transvie
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+  phpmyadmin:
+      image: phpmyadmin/phpmyadmin
+      container_name: phpmyadmin-transvie
+      restart: always
+      ports:
+        - "8080:80"
+      environment:
+        PMA_HOST: mysql
+        PMA_PORT: 3306
+        MYSQL_ROOT_PASSWORD: root
+
+volumes:
+  mysql-data:
