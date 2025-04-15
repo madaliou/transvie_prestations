@@ -13,17 +13,16 @@ const SECRET = 'supersecret';
 
 const db = mysql.createConnection({
   host: 'localhost',
-  user: 'root',
-  port: 3307,
-  password: 'root',
-  database: 'transvie'
+  user: 'moozistud',
+  port: 3306, //pour docker changer juste le port sur 3307 ou autre 
+  password: '%4%(?Dk8&6!Qx6H[',
+  database: 'transvie_prestations'
 });
 
 db.connect((err) => {
   if (err) throw err;
   console.log('🟢 Connecté à MySQL');
 });
-
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader?.split(' ')[1];
