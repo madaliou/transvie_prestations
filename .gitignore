@@ -10,6 +10,8 @@ out/
 dist/
 *.log
 
+**/.yarn/
+
 # Environnement local
 .env
 .env.local
