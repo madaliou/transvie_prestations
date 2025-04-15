@@ -14,3 +14,5 @@
 # Ignorer les fichiers spécifiques aux éditeurs
 .idea/
 .DS_Store
+
+**/node_modules
