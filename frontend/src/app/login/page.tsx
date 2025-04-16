@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState } from 'react';
@@ -84,7 +86,7 @@ export default function Login() {
       </form>
 
       <p style={{ marginTop: '15px', textAlign: 'center' }}>
-        Pas encore de compte ? <a href="/register" style={{ color: '#007bff' }}>S'inscrire</a>
+        Pas encore de compte ? <a href="/register" style={{ color: '#007bff' }}>S&apos;inscrire</a>
       </p>
     </main>
   );
@@ -117,14 +119,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     flexDirection: 'column',
     gap: '15px'
-  },
-  input: {
-    padding: '10px',
-    fontSize: '16px',
-    borderRadius: '6px',
-    border: '1px solid #ccc',
-    backgroundColor: '#ffffff',
-    color: '#344767'
   },
   button: {
     padding: '12px',

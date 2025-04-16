@@ -177,6 +177,7 @@ __metadata:
     bcrypt: "npm:^5.1.1"
     body-parser: "npm:^2.2.0"
     cors: "npm:^2.8.5"
+    dotenv: "npm:^16.5.0"
     express: "npm:^5.1.0"
     jsonwebtoken: "npm:^9.0.2"
     mysql2: "npm:^3.14.0"
@@ -431,6 +432,13 @@ __metadata:
   version: 2.0.3
   resolution: "detect-libc@npm:2.0.3"
   checksum: 10c0/88095bda8f90220c95f162bf92cad70bd0e424913e655c20578600e35b91edc261af27531cf160a331e185c0ced93944bc7e09939143225f56312d7fd800fdb7
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.5.0":
+  version: 16.5.0
+  resolution: "dotenv@npm:16.5.0"
+  checksum: 10c0/5bc94c919fbd955bf0ba44d33922a1e93d1078e64a1db5c30faeded1d996e7a83c55332cb8ea4fae5a9ca4d0be44cbceb95c5811e70f9f095298df09d1997dd9
   languageName: node
   linkType: hard
 

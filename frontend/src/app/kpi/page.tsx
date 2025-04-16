@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -18,6 +19,7 @@ const Kpis = () => {
         const res = await fetch('http://localhost:3001/api/kpis');
         const data = await res.json();
         setKpis(data);
+        console.log('KPIs:', data);
       } catch (err) {
         console.error('Erreur de chargement des KPIs', err);
       } finally {
@@ -93,13 +95,13 @@ const Kpis = () => {
       sorter: (a: any, b: any) =>
         new Date(a.date).getTime() - new Date(b.date).getTime(),
     },
-    {
-      title: 'Nombre',
-      dataIndex: 'count',
-      key: 'count',
-      sorter: (a: any, b: any) => a.count - b.count,
+    /* {
+      title: 'Coût',
+      dataIndex: 'cout',
+      key: 'cout',
+      render: (value: number) => value != null ? `${value.toFixed(2)} €` : '-',
       align: 'right' as const,
-    },
+    } */
   ];
 
   return (

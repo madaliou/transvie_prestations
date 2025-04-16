@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -9,15 +10,23 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const SECRET = 'supersecret';
-
-const db = mysql.createConnection({
+const SECRET = process.env.JWT_SECRET;
+/* const db = mysql.createConnection({
   host: 'localhost',
   user: 'moozistud',
   port: 3306, //pour docker changer juste le port sur 3307 ou autre 
   password: '%4%(?Dk8&6!Qx6H[',
   database: 'transvie_prestations'
+}); */
+console.log('pwd : ', process.env.DB_PASSWORD)
+const db = mysql.createConnection({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  port: process.env.DB_PORT,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
+
 
 db.connect((err) => {
   if (err) throw err;
@@ -200,24 +209,24 @@ app.get('/api/subcategories', (req, res) => {
   app.get('/api/kpis', (req, res) => {
     const sql = `
       SELECT 
+        p.*, 
         a.name AS agence, 
         sc.name AS prestation, 
-        COUNT(*) AS count,
         DATE(p.date) AS date
       FROM prestations p
       JOIN agences a ON p.agence_id = a.id
       LEFT JOIN subcategories sc ON p.act_id = sc.id
-      GROUP BY a.name, sc.name, DATE(p.date)
       ORDER BY DATE(p.date) DESC
     `;
   
     db.query(sql, (err, results) => {
       if (err) {
-        console.error('Erreur lors de la récupération des KPIs :', err);
+        console.error('Erreur lors de la récupération des prestations :', err);
         return res.status(500).json({ error: 'Erreur serveur' });
       }
       res.json(results);
     });
-  });  
+  });
+  
 
 app.listen(3001, () => console.log('🚀 Backend en ligne sur http://localhost:3001'));

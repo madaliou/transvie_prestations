@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -11,6 +13,7 @@ export default function Home() {
   const [cout, setCout] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [agencesList, setAgencesList] = useState<{ id: number; name: string }[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userName, setUserName] = useState<string>(''); // Ajouter l'état pour le nom de l'utilisateur
   const [categoriesList, setCategoriesList] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState('');
@@ -134,14 +137,14 @@ export default function Home() {
         <label>Date {requiredMark}</label>
         <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} />
 
-        <label>Type de prestation  {requiredMark}</label>
+        <label>Type de service  {requiredMark}</label>
     <select
       required
       value={categoryId}
       onChange={(e) => setCategoryId(e.target.value)}
       style={styles.input}
     >
-      <option value="">-- Choisissez une catégorie --</option>
+      <option value="">-- Choisissez un service --</option>
       {categoriesList.map((cat) => (
         <option key={cat.category_id} value={cat.category_id}>
           {cat.category_name}
@@ -151,14 +154,14 @@ export default function Home() {
 
     {categoryId && (
   <>
-    <label>Prestation  {requiredMark}</label>
+    <label>Acte  {requiredMark}</label>
     <select
       required
       value={subCategoryId}
       onChange={(e) => setSubCategoryId(e.target.value)}
       style={styles.input}
     >
-      <option value="">-- Choisissez une sous-catégorie --</option>
+      <option value="">-- Choisissez un acte --</option>
       {filteredSubcategories.map((sub) => (
         <option key={sub.id} value={sub.id}>
           {sub.name}
@@ -168,7 +171,7 @@ export default function Home() {
   </>
 )}
 
-<label>Ou autre prestation (libre)</label>
+<label>Ou autre acte (libre)</label>
     <input
       type="text"
       placeholder="Nom de la prestation libre"
