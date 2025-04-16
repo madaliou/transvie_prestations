@@ -16,7 +16,7 @@ const Kpis = () => {
   useEffect(() => {
     const fetchKpis = async () => {
       try {
-        const res = await fetch('http://localhost:3001/api/kpis');
+        const res = await fetch('https://presta.grouptransvie.com/api/kpis');
         const data = await res.json();
         setKpis(data);
         console.log('KPIs:', data);

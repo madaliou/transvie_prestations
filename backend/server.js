@@ -46,7 +46,7 @@ function authenticateToken(req, res, next) {
 }
 
 // ▶️ Inscription
-app.post('/api/register', async (req, res) => {
+app.post('/register', async (req, res) => {
   // Déstructuration des données du corps de la requête
   const { email, password, firstname, lastname } = req.body;
 
@@ -81,7 +81,7 @@ app.post('/api/register', async (req, res) => {
 
 
 // ▶️ Connexion
-app.post('/api/login', (req, res) => {
+app.post('/login', (req, res) => {
   const { email, password } = req.body;
 
   const sql = 'SELECT * FROM users WHERE email = ?';
@@ -97,7 +97,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-app.post('/api/prestations', (req, res) => {
+app.post('/prestations', (req, res) => {
     const { agenceId, actId, date, otherAct, cout } = req.body;
   
     const sql = 'INSERT INTO prestations (agence_id, act_id, date, other_act, cout) VALUES (?, ?, ?, ?, ?)';
@@ -106,21 +106,21 @@ app.post('/api/prestations', (req, res) => {
       res.status(200).json({ message: '✅ Prestation enregistrée avec succès !' });
     });
   });
-app.get('/api/agences', (req, res) => {
+app.get('/agences', (req, res) => {
 db.query('SELECT * FROM agences', (err, result) => {
     if (err) return res.status(500).json({ error: err });
     res.json(result);
 });
 });
 
-app.get('/api/prestations-types', (req, res) => {
+app.get('/prestations-types', (req, res) => {
 db.query('SELECT * FROM types_prestations', (err, result) => {
     if (err) return res.status(500).json({ error: err });
     res.json(result);
 });
 });
 
-app.post('/api/agences', (req, res) => {
+app.post('/agences', (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'Le nom de l’agence est requis.' });
   
@@ -132,7 +132,7 @@ app.post('/api/agences', (req, res) => {
   });
 
   // Récupérer toutes les catégories
-app.get('/api/categories', (req, res) => {
+app.get('/categories', (req, res) => {
   db.query('SELECT * FROM categories', (err, result) => {
     if (err) throw err;
     res.json(result);
@@ -140,7 +140,7 @@ app.get('/api/categories', (req, res) => {
 });
 
 // Récupérer les sous-catégories selon la catégorie
-app.get('/api/subcategories', (req, res) => {
+app.get('/subcategories', (req, res) => {
   const sql = `
     SELECT 
       cat.id AS category_id,
@@ -182,7 +182,7 @@ app.get('/api/subcategories', (req, res) => {
   });
 });
 
-  app.get('/api/prestations', (req, res) => {
+  app.get('/prestations', (req, res) => {
     const sql = `
       SELECT 
         p.id,
@@ -206,7 +206,7 @@ app.get('/api/subcategories', (req, res) => {
   });
   
 
-  app.get('/api/kpis', (req, res) => {
+  app.get('/kpis', (req, res) => {
     const sql = `
       SELECT 
         p.*, 

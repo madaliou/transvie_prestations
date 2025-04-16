@@ -37,7 +37,7 @@ export default function Home() {
     }
 
     const fetchAgences = async () => {
-      const res = await fetch('http://localhost:3001/api/agences');
+      const res = await fetch('https://presta.grouptransvie.com/api/agences');
       const data = await res.json();
       setAgencesList(data);
     
@@ -48,7 +48,7 @@ export default function Home() {
   
     // Fonction pour récupérer les prestations
     const fetchCategoriesAndSubcategories = async () => {
-      const res = await fetch('http://localhost:3001/api/subcategories');
+      const res = await fetch('https://presta.grouptransvie.com/api/subcategories');
       const data = await res.json();
       setCategoriesList(data);
     };
@@ -76,7 +76,7 @@ export default function Home() {
       cout: parseFloat(cout)
     };
     const token = localStorage.getItem('token');
-    const res = await fetch('http://localhost:3001/api/prestations', {
+    const res = await fetch('https://presta.grouptransvie.com/api/prestations', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -181,6 +181,15 @@ export default function Home() {
     />
 
         <label>Coût (FCFA)  {requiredMark}</label>
+        <input
+          type="number"
+          required
+          value={cout}
+          onChange={(e) => setCout(e.target.value)}
+          style={styles.input}
+        />
+
+  <label>Numero d&apos;attestation   {requiredMark}</label>
         <input
           type="number"
           required
