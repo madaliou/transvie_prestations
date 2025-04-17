@@ -5,21 +5,23 @@ import React, { useState, useEffect } from 'react';
 import { Table, Typography, Tooltip, Button, Input } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import Papa from 'papaparse';
+import Link from 'next/link';
 
 const { Title } = Typography;
+
 
 const Kpis = () => {
   const [kpis, setKpis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const base_url = process.env.NEXT_PUBLIC_API_URL
 
   useEffect(() => {
     const fetchKpis = async () => {
       try {
-        const res = await fetch('https://presta.grouptransvie.com/api/kpis');
+        const res = await fetch(`${base_url}/kpis`);
         const data = await res.json();
         setKpis(data);
-        console.log('KPIs:', data);
       } catch (err) {
         console.error('Erreur de chargement des KPIs', err);
       } finally {
@@ -36,9 +38,7 @@ const Kpis = () => {
       weekday: 'short',
       year: 'numeric',
       month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      day: 'numeric'
     });
   };
 
@@ -47,7 +47,9 @@ const Kpis = () => {
       Agence: kpi.agence,
       Prestation: kpi.prestation,
       Date: formatDateTime(kpi.date),
-      Nombre: kpi.count,
+      Coût: kpi.cout,
+      Autre: kpi.other_act,
+      NuméroAttestation: kpi.certificate_number
     }));
 
     const csv = Papa.unparse(csvData);
@@ -95,13 +97,20 @@ const Kpis = () => {
       sorter: (a: any, b: any) =>
         new Date(a.date).getTime() - new Date(b.date).getTime(),
     },
-    /* {
+    {
       title: 'Coût',
       dataIndex: 'cout',
       key: 'cout',
-      render: (value: number) => value != null ? `${value.toFixed(2)} €` : '-',
+      render: (value: number) => value ?? '-',
       align: 'right' as const,
-    } */
+    },
+    {
+      title: "Numero d'attestation",
+      dataIndex: 'certificate_number',
+      key: 'certificate_number',
+      render: (value: number) => value ?? '-',
+      align: 'right' as const,
+    }
   ];
 
   return (
@@ -132,6 +141,10 @@ const Kpis = () => {
         bordered
         size="middle"
       />
+      <Link href="/" style={styles.backLink}>
+      ← Retour à la saisie
+      </Link>
+     
     </div>
   );
 };
@@ -159,6 +172,13 @@ const styles: { [key: string]: React.CSSProperties } = {
   searchInput: {
     width: 300,
     borderRadius: 6,
+  },
+  backLink: {
+    marginBottom: '10px',
+    paddingLeft: '0',
+    fontSize: '16px',
+    color: '#1890ff',
+    fontWeight: 'bold',
   },
 };
 

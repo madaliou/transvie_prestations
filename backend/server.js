@@ -5,10 +5,12 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const authenticate = require('./middlewares/auth');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+//app.use('/api', authenticate);
 
 const SECRET = process.env.JWT_SECRET;
 /* const db = mysql.createConnection({
@@ -18,7 +20,7 @@ const SECRET = process.env.JWT_SECRET;
   password: '%4%(?Dk8&6!Qx6H[',
   database: 'transvie_prestations'
 }); */
-console.log('pwd : ', process.env.DB_PASSWORD)
+
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -46,7 +48,7 @@ function authenticateToken(req, res, next) {
 }
 
 // ▶️ Inscription
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
   // Déstructuration des données du corps de la requête
   const { email, password, firstname, lastname } = req.body;
 
@@ -81,7 +83,7 @@ app.post('/register', async (req, res) => {
 
 
 // ▶️ Connexion
-app.post('/login', (req, res) => {
+app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
 
   const sql = 'SELECT * FROM users WHERE email = ?';
@@ -93,34 +95,48 @@ app.post('/login', (req, res) => {
     if (!match) return res.status(401).json({ error: 'Mot de passe incorrect' });
 
     const token = jwt.sign({ userId: user.id, email: user.email }, SECRET, { expiresIn: '1h' });
-    res.json({ token });
+    res.json({ token,  user: {
+      id: user.id,
+      firstName: user.firstname,
+      lastName: user.lastname,
+      email: user.email,
+    },});
   });
 });
 
-app.post('/prestations', (req, res) => {
-    const { agenceId, actId, date, otherAct, cout } = req.body;
+  app.post('/api/prestations', authenticateToken, (req, res) => {
+    const { agenceId, actId, date, otherAct, cout, certificateNumber } = req.body;
+    console.log('auth user : ', req.user)
+    const userId = req.user?.userId; // ou req.session.userId ou autre
   
-    const sql = 'INSERT INTO prestations (agence_id, act_id, date, other_act, cout) VALUES (?, ?, ?, ?, ?)';
-    db.query(sql, [agenceId, actId, date, otherAct,  cout], (err, result) => {
+    if (!userId) return res.status(401).json({ error: 'Utilisateur non authentifié' });
+  
+    const sql = `
+      INSERT INTO prestations 
+      (agence_id, act_id, date, other_act, cout, certificate_number, user_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  
+    db.query(sql, [agenceId, actId, date, otherAct, cout, certificateNumber, userId], (err, result) => {
       if (err) return res.status(500).json({ error: err });
       res.status(200).json({ message: '✅ Prestation enregistrée avec succès !' });
     });
   });
-app.get('/agences', (req, res) => {
+  
+app.get('/api/agences', (req, res) => {
 db.query('SELECT * FROM agences', (err, result) => {
     if (err) return res.status(500).json({ error: err });
     res.json(result);
 });
 });
 
-app.get('/prestations-types', (req, res) => {
+app.get('/api/prestations-types', (req, res) => {
 db.query('SELECT * FROM types_prestations', (err, result) => {
     if (err) return res.status(500).json({ error: err });
     res.json(result);
 });
 });
 
-app.post('/agences', (req, res) => {
+app.post('/api/agences', (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: 'Le nom de l’agence est requis.' });
   
@@ -132,7 +148,7 @@ app.post('/agences', (req, res) => {
   });
 
   // Récupérer toutes les catégories
-app.get('/categories', (req, res) => {
+app.get('/api/categories', (req, res) => {
   db.query('SELECT * FROM categories', (err, result) => {
     if (err) throw err;
     res.json(result);
@@ -140,7 +156,7 @@ app.get('/categories', (req, res) => {
 });
 
 // Récupérer les sous-catégories selon la catégorie
-app.get('/subcategories', (req, res) => {
+app.get('/api/subcategories', (req, res) => {
   const sql = `
     SELECT 
       cat.id AS category_id,
@@ -182,7 +198,7 @@ app.get('/subcategories', (req, res) => {
   });
 });
 
-  app.get('/prestations', (req, res) => {
+  app.get('/api/prestations', (req, res) => {
     const sql = `
       SELECT 
         p.id,
@@ -206,7 +222,7 @@ app.get('/subcategories', (req, res) => {
   });
   
 
-  app.get('/kpis', (req, res) => {
+  app.get('/api/kpis', (req, res) => {
     const sql = `
       SELECT 
         p.*, 

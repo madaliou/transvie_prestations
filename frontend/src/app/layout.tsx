@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import 'antd/dist/reset.css'; // pour Ant Design v5+
+import { ToastContainer } from 'react-toastify';
+import { ToastProvider } from "./ToastProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <ToastProvider />
       </body>
     </html>
   );

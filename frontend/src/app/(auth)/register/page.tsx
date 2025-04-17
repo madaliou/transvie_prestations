@@ -16,13 +16,17 @@ export default function Register() {
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  const base_url = process.env.NEXT_PUBLIC_API_URL;
+
+  console.log('base url', base_url)
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
 
     try {
-      const res = await fetch('https://presta.grouptransvie.com/api/register', {
+      const res = await fetch(`${base_url}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstname, lastname, email, password })

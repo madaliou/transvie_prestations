@@ -12,13 +12,14 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const base_url = process.env.NEXT_PUBLIC_API_URL;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
     try {
-      const res = await fetch('https://presta.grouptransvie.com/api/login', {
+      const res = await fetch(`${base_url}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -32,6 +33,7 @@ export default function Login() {
 
       // Stockage du token dans le localStorage
       localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user))
 
       // Redirection vers la page d'accueil ou tableau de bord
       router.push('/');

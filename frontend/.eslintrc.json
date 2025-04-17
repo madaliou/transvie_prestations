@@ -1,0 +1,10 @@
+{
+    "extends": "eslint:recommended",
+    "rules": {
+      "no-console": "off",
+      "no-unused-vars": "off",
+      "no-explicit-any": "off",
+      "no-undef": "off",
+      "no-restricted-globals": "off"
+    }
+  }

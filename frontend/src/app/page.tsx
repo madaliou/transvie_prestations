@@ -5,12 +5,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { toast } from 'react-toastify';
 
 export default function Home() {
   const router = useRouter();
   const [date, setDate] = useState('');
   const [agenceId, setAgenceId] = useState('');
   const [cout, setCout] = useState('');
+  const [certificateNumber, setCertificateNumber] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [agencesList, setAgencesList] = useState<{ id: number; name: string }[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -21,6 +23,7 @@ export default function Home() {
   const [filteredSubcategories, setFilteredSubcategories] = useState<any[]>([]);
   const [otherAct, setOtherAct] = useState('');
   const requiredMark = <span style={{ color: 'red' }}>*</span>;
+  const base_url = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     // Vérification du token d'authentification
@@ -31,14 +34,16 @@ export default function Home() {
     }
 
     // Récupérer le nom de l'utilisateur depuis le localStorage
-    const user = JSON.parse(localStorage.getItem('user') || '{}'); // Supposons que le nom et prénom de l'utilisateur soient stockés sous la clé 'user'
+    const user = JSON.parse(localStorage.getItem('user') || '{}'); 
+    console.log('get user ', user)// Supposons que le nom et prénom de l'utilisateur soient stockés sous la clé 'user'
     if (user && user.firstName && user.lastName) {
       setUserName(`${user.firstName} ${user.lastName}`);
     }
 
     const fetchAgences = async () => {
-      const res = await fetch('https://presta.grouptransvie.com/api/agences');
+      const res = await  fetch(`${base_url}/agences`);
       const data = await res.json();
+      console.log('agences : ', data)
       setAgencesList(data);
     
       // Sélectionner Cotonou par défaut
@@ -48,7 +53,7 @@ export default function Home() {
   
     // Fonction pour récupérer les prestations
     const fetchCategoriesAndSubcategories = async () => {
-      const res = await fetch('https://presta.grouptransvie.com/api/subcategories');
+      const res = await fetch(`${base_url}/subcategories`);
       const data = await res.json();
       setCategoriesList(data);
     };
@@ -73,10 +78,11 @@ export default function Home() {
       actId: parseInt(subCategoryId),
       date,
       otherAct,
+      certificateNumber,
       cout: parseFloat(cout)
     };
     const token = localStorage.getItem('token');
-    const res = await fetch('https://presta.grouptransvie.com/api/prestations', {
+    const res = await fetch(`${base_url}/prestations`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -89,11 +95,16 @@ export default function Home() {
 
     if (data.message) {
       setSuccessMessage("🎉 Prestation enregistrée avec succès !");
+      toast.success("🎉 Prestation enregistrée avec succès !");
+    }else{
+      toast.error('Une erreur est survenue')
     }
 
     setAgenceId("3");
     setDate('');
     setCout('');
+    setCertificateNumber('')
+    setOtherAct('')
   };
 
   useEffect(() => {
@@ -114,6 +125,10 @@ export default function Home() {
   return (
     <main style={styles.container}>
       <img src="/logo.webp" alt="Logo Transvie" style={styles.logo} />
+       {/* Afficher les infos de l'utilisateur */}
+       <div style={styles.userInfo}>
+        <span>{userName ? `${userName}` : 'Bienvenue'}</span>
+      </div>
       <h2 style={styles.title}>Enregistrement de prestation</h2>
 
       {successMessage && (
@@ -193,8 +208,8 @@ export default function Home() {
         <input
           type="number"
           required
-          value={cout}
-          onChange={(e) => setCout(e.target.value)}
+          value={certificateNumber}
+          onChange={(e) => setCertificateNumber(e.target.value)}
           style={styles.input}
         />
 
@@ -218,7 +233,8 @@ export default function Home() {
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
-    maxWidth: '500px',
+    width: '90%',        // occupe 90% de la largeur de l’écran
+    maxWidth: '1000px',   // mais ne dépassera pas 800px
     margin: '40px auto',
     padding: '30px',
     backgroundColor: '#f9f9f9',
