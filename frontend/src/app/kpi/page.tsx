@@ -75,7 +75,7 @@ const Kpis = () => {
   );
 
   // Calculer les statistiques par acte
-  const getActStats = () => {
+  /* const getActStats = () => {
     const actStats = kpis.reduce((acc, kpi) => {
       const act = kpi.act_id;
       acc[act] = acc[act] ? acc[act] + 1 : 1;
@@ -86,7 +86,7 @@ const Kpis = () => {
       name: `Acte ${act}`,
       value: count
     }));
-  };
+  }; */
 
   // Calculer les statistiques par service
   const getServiceStats = () => {

@@ -15,7 +15,6 @@ export default function Home() {
   const [certificateNumber, setCertificateNumber] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [agencesList, setAgencesList] = useState<{ id: number; name: string }[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [userName, setUserName] = useState<string>(''); // Ajouter l'état pour le nom de l'utilisateur
   const [categoriesList, setCategoriesList] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState('');
@@ -60,7 +59,7 @@ export default function Home() {
     
     fetchCategoriesAndSubcategories();
     fetchAgences();
-  }, [router]);
+  }, [base_url, router]);
 
   useEffect(() => {
     if (categoryId) {
