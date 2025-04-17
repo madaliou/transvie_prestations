@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Table, Typography, Tooltip, Button, Input } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import Papa from 'papaparse';
@@ -14,6 +14,7 @@ const Kpis = () => {
   const [kpis, setKpis] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
   const base_url = process.env.NEXT_PUBLIC_API_URL;
   const COLORS = [
     '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
@@ -21,7 +22,7 @@ const Kpis = () => {
     '#FEB019', '#FF4560', '#00A7E1', '#FF66C3'
   ];
 
-  useEffect(() => {
+  /* useEffect(() => {
     const fetchKpis = async () => {
       try {
         const res = await fetch(`${base_url}/kpis`);
@@ -35,7 +36,58 @@ const Kpis = () => {
     };
 
     fetchKpis();
+  }, []); */
+
+  // 1. Récupère KPIs et catégories
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [res1, res2] = await Promise.all([
+          fetch(`${base_url}/kpis`),
+          fetch(`${base_url}/subcategories`)
+        ]);
+        const [dataKpis, dataCats] = await Promise.all([res1.json(), res2.json()]);
+        setKpis(dataKpis);
+        setCategories(dataCats);
+      } catch (err) {
+        console.error('Erreur de chargement des KPIs ou catégories', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
+
+  // 2. Construis le mapping act_id → category_name
+  const actIdToCategory = useMemo(() => {
+    const map: Record<number,string> = {};
+    categories.forEach((cat: any) => {
+      cat.subcategories.forEach((sub: any) => {
+        map[sub.id] = cat.category_name;
+      });
+    });
+    return map;
+  }, [categories]);
+
+  // 3. Groupes pour les charts
+  const getActStats = () => {
+    const stats: Record<string, number> = {};
+    kpis.forEach(kpi => {
+      const name = kpi.prestation || 'Inconnu';
+      stats[name] = (stats[name] || 0) + 1;
+    });
+    return Object.entries(stats).map(([name, value]) => ({ name, value }));
+  };
+
+  const getCategoryStats = () => {
+    const stats: Record<string, number> = {};
+    kpis.forEach(kpi => {
+      const catName = actIdToCategory[kpi.act_id] || 'Inconnu';
+      stats[catName] = (stats[catName] || 0) + 1;
+    });
+    return Object.entries(stats).map(([name, value]) => ({ name, value }));
+  };
+
 
   const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -73,34 +125,6 @@ const Kpis = () => {
       .toLowerCase()
       .includes(searchText.toLowerCase())
   );
-
-  // Calculer les statistiques par acte
-  /* const getActStats = () => {
-    const actStats = kpis.reduce((acc, kpi) => {
-      const act = kpi.act_id;
-      acc[act] = acc[act] ? acc[act] + 1 : 1;
-      return acc;
-    }, {});
-
-    return Object.entries(actStats).map(([act, count]) => ({
-      name: `Acte ${act}`,
-      value: count
-    }));
-  }; */
-
-  // Calculer les statistiques par service
-  const getServiceStats = () => {
-    const serviceStats = kpis.reduce((acc, kpi) => {
-      const service = kpi.prestation;
-      acc[service] = acc[service] ? acc[service] + 1 : 1;
-      return acc;
-    }, {});
-
-    return Object.entries(serviceStats).map(([service, count]) => ({
-      name: service,
-      value: count
-    }));
-  };
 
   const columns = [
     {
@@ -177,9 +201,9 @@ const Kpis = () => {
 
 <div style={styles.chartRow}>
       {/* Graphique pour les statistiques par actes */}
-      {/* <div style={styles.chartContainer}>
+      <div style={styles.chartContainer}>
         <Title level={4}>Répartition par Actes</Title>
-        <PieChart width={400} height={300}>
+        <PieChart width={400} height={400}>
           <Pie
             data={getActStats()}
             dataKey="value"
@@ -190,35 +214,31 @@ const Kpis = () => {
             fill="#8884d8"
             label
           >
-            {getActStats().map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#8884d8' : '#82ca9d'} />
-            ))}
+            {getActStats().map((_, idx) => (
+                <Cell key={idx} fill={COLORS[(idx+4) % COLORS.length]} />
+              ))}
           </Pie>
           <RechartsTooltip />
           <Legend />
         </PieChart>
-      </div> */}
+      </div>
 
       {/* Graphique pour les statistiques par services */}
       <div style={styles.chartContainer}>
-        <Title level={4} style={{marginLeft: 40}}>Répartition par Services</Title>
-        <PieChart width={600} height={400}>
-          <Pie
-            data={getServiceStats()}
-            dataKey="value"
-            nameKey="name"
-            cx="50%"
-            cy="50%"
-            outerRadius={100}
-            label
-          >
-            {getServiceStats().map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
-              />
-            ))}
-          </Pie>
+        <Title level={4} style={{marginLeft: 40}}>Répartition par services</Title>
+        <PieChart width={400} height={400}>
+        <Pie
+              data={getCategoryStats()}
+              dataKey="value"
+              nameKey="name"
+              cx="50%" cy="50%"
+              outerRadius={100}
+              label
+            >
+              {getCategoryStats().map((_, idx) => (
+                <Cell key={idx} fill={COLORS[(idx+4) % COLORS.length]} />
+              ))}
+            </Pie>
           <RechartsTooltip />
           <Legend verticalAlign="bottom" height={36}/>
 </PieChart>
@@ -226,9 +246,12 @@ const Kpis = () => {
 
      
     </div>
+    <div style={{marginTop: "50px"}}>
     <Link href="/" style={styles.backLink}>
         ← Retour à la saisie
       </Link>
+    </div>
+    
     </div>
   );
 };
@@ -264,6 +287,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '16px',
     color: '#1890ff',
     fontWeight: 'bold',
+    marginTop: '40px'
   },
   chartRow: {
     display: 'flex',
@@ -277,7 +301,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flex: 1,
     minWidth: '300px',   // taille minimale pour forcer le wrap sur mobile
     //textAlign: 'center',
-    marginBottom: '30px'
+    //marginBottom: '30px'
   },
 };
 
