@@ -105,6 +105,8 @@ export default function Home() {
     setCout('');
     setCertificateNumber('')
     setOtherAct('')
+    setCategoryId('')
+    setSubCategoryId('')
   };
 
   useEffect(() => {
@@ -204,10 +206,9 @@ export default function Home() {
           style={styles.input}
         />
 
-  <label>Numero d&apos;attestation   {requiredMark}</label>
+  <label>Numero d&apos;attestation </label>
         <input
           type="number"
-          required
           value={certificateNumber}
           onChange={(e) => setCertificateNumber(e.target.value)}
           style={styles.input}
@@ -218,13 +219,13 @@ export default function Home() {
 
       <div style={styles.linkWrapper}>
       <Link href="/kpi" style={styles.link}>
-        Voir les statistiques
+        Voir les statistiques 👀
       </Link>
     </div>
 
       <div style={styles.logoutLinkWrapper}>
       <button onClick={handleLogout} style={styles.logoutLink}>
-        🔓 Se déconnecter
+         Se déconnecter 🔓
       </button>
     </div>
     </main>
