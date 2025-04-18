@@ -106,7 +106,6 @@ app.post('/api/login', (req, res) => {
 
   app.post('/api/prestations', authenticateToken, (req, res) => {
     const { agenceId, actId, date, otherAct, cout, certificateNumber } = req.body;
-    console.log('auth user : ', req.user)
     const userId = req.user?.userId; // ou req.session.userId ou autre
   
     if (!userId) return res.status(401).json({ error: 'Utilisateur non authentifié' });
@@ -241,6 +240,19 @@ app.get('/api/subcategories', (req, res) => {
         return res.status(500).json({ error: 'Erreur serveur' });
       }
       res.json(results);
+    });
+  });
+
+  app.get('/api/lettres', (req, res) => {
+    const sql = 'SELECT * FROM bd_lettre_garantie.vue_lettres_garantie LIMIT 10';
+  
+    db.query(sql, (err, results) => {
+      if (err) {
+        console.error('Erreur lors de la récupération des lettres de garantie :', err);
+        return res.status(500).json({ error: 'Erreur lors de la récupération des lettres' });
+      }
+  
+      res.status(200).json(results);
     });
   });
   
