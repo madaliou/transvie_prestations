@@ -21,19 +21,21 @@ const SECRET = process.env.JWT_SECRET;
   database: 'transvie_prestations'
 }); */
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   port: process.env.DB_PORT,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-
-db.connect((err) => {
-  if (err) throw err;
-  console.log('🟢 Connecté à MySQL');
+db.on('error', function (err) {
+  console.error('Erreur MySQL :', err.code);
 });
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader?.split(' ')[1];
