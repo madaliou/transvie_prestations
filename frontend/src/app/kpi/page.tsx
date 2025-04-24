@@ -14,6 +14,7 @@ import {
   Tooltip as RechartsTooltip,
 } from "recharts";
 import { toast } from "react-toastify";
+import { useRouter } from 'next/navigation';
 
 const { Title } = Typography;
 
@@ -28,19 +29,17 @@ const Kpis = () => {
 
 const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 const [selectedRecord, setSelectedRecord] = useState<any>(null);
+const router = useRouter()
 
-// 🔁 Montre le modal
 const showDeleteModal = (record: any) => {
   setSelectedRecord(record);
   setIsDeleteModalVisible(true);
 };
 
-// ❌ Ferme le modal
 const handleCancel = () => {
   setIsDeleteModalVisible(false);
   setSelectedRecord(null);
 };
-
 
   const base_url = process.env.NEXT_PUBLIC_API_URL;
   const COLORS = [
@@ -152,13 +151,15 @@ const handleCancel = () => {
 
   const handleExportCSV = () => {
     const csvData = filteredData.map((kpi) => ({
-      Agence: kpi.agence?.name ?? "-",
-      Prestation: kpi.prestation ?? "-",
+      Entrepirise: kpi.client?.name ?? "-",
+      Acte: kpi.subcategory?.name ?? "-",
       Date: formatDateTime(kpi.date),
       Coût: kpi.cout ?? "-",
-      Autre: kpi.other_act ?? "-",
-      NuméroAttestation: kpi.certificate_number ?? "-",
+      Autre: kpi.otherAct ?? "-",
+      NuméroAttestation: kpi.certificateNumber ?? "-",
     }));
+
+    console.log('csvdata : ', csvData)
 
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -174,7 +175,10 @@ const handleCancel = () => {
     Object.values(item).join(" ").toLowerCase().includes(searchText.toLowerCase())
   ); */
 
-// ✅ Supprime le record
+  const handleEdit = (record: any) => {
+    router.push(`/?id=${record.id}`);
+  };
+
 const handleConfirmDelete = async () => {
   if (!selectedRecord) return;
 
@@ -256,7 +260,7 @@ const handleConfirmDelete = async () => {
             <Button
               type="primary"
               icon={<EditFilled />}
-              // onClick={() => handleEdit(record)}
+              onClick={() => handleEdit(record)}
             />
           </Tooltip>
           <Tooltip title="Supprimer">
@@ -279,6 +283,12 @@ const handleConfirmDelete = async () => {
       <Title level={2} style={styles.title}>
         Statistiques des Prestations
       </Title>
+
+      <div style={{ marginBottom: "30px" }}>
+        <Link href="/" style={styles.backLink}>
+          ← Retour à la saisie
+        </Link>
+      </div>
 
       <div style={styles.actions}>
       <Select

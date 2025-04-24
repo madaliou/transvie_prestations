@@ -3,15 +3,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import { Select, Form, Input} from 'antd';
 const {Option} = Select;
-//import Select from "react-select";
 
 export default function Home() {
+
   const router = useRouter();
+
+  const { id } = router.query;
+
+  const [data, setData] = useState<any>(null);
   const [date, setDate] = useState('');
   const [agenceId, setAgenceId] = useState('');
   const [cout, setCout] = useState('');
@@ -29,50 +33,31 @@ export default function Home() {
   const [filteredSubcategories, setFilteredSubcategories] = useState<any[]>([]);
   const [otherAct, setOtherAct] = useState('');
   const requiredMark = <span style={{ color: 'red' }}>*</span>;
-  const [editData, setEditData] = useState<any>(null);
   const base_url = process.env.NEXT_PUBLIC_API_URL;
 
 const sortedClients = [...clients].sort((a, b) => a.name.localeCompare(b.name));
-const searchParams = useSearchParams();
-const id = searchParams.get('id');
 
-  // Chargement des données avec l'ID
 useEffect(() => {
   if (id) {
+    // Exemple d'appel API pour récupérer les données
     fetch(`${base_url}/prestations/${id}`)
       .then((res) => res.json())
-      .then((result) => setEditData(result))
+      .then((result) => setData(result))
       .catch((err) => console.error('Erreur lors du chargement :', err));
   }
-}, [id]);
-
-const [form] = Form.useForm(); 
-useEffect(() => {
-  
-  if (editData) {
-    form.setFieldsValue({
-      clientId: editData.clientId,
-      healthFacilityTypeId: editData.healthFacilityTypeId,
-      categoryId: editData.categoryId,
-      subCategoryId: editData.actId,
-      date: editData.date,
-      otherAct: editData.otherAct,
-      cout: editData.cout,
-      certificateNumber: editData.certificateNumber,
-    });
-
-    setAgenceId(String(editData.agenceId));
-    setSubCategoryId(String(editData.actId));
-    setDate(editData.date || '');
-    setOtherAct(editData.otherAct || '');
-    setCertificateNumber(editData.certificateNumber || '');
-    setCout(editData.cout ? editData.cout.toString() : '');
-    setClientId(String(editData.clientId));
-    setHealthFacilityTypeId(String(editData.healthFacilityTypeId));
-    setCategoryId(String(editData.categoryId));
+  if (data) {
+    setAgenceId(String(data.agenceId));
+    setSubCategoryId(String(data.actId));
+    setDate(data.date || '');
+    setOtherAct(data.otherAct || '');
+    setCertificateNumber(data.certificateNumber || '');
+    setCout(data.cout ? data.cout.toString() : '');
+    setClientId(String(data.clientId));
+    setHealthFacilityTypeId(String(data.healthFacilityTypeId));
+    setCategoryId(String(data.categoryId));
   }
-}, [editData]);
-  
+}, [id, data]);
+
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -123,12 +108,8 @@ useEffect(() => {
     }
   }, [categoryId, categoriesList]);
 
-  const handleSubmit = async (values: any) => {
-    const valuesCopy = { ...values };
-    delete valuesCopy.categoryId;
-    delete valuesCopy.subCategoryId;
+  const handleSubmit = async () => {  
     const payload = {
-      ...valuesCopy,
       agenceId: parseInt(agenceId),
       actId: parseInt(subCategoryId),
       date,
@@ -136,45 +117,39 @@ useEffect(() => {
       certificateNumber,
       cout: parseFloat(cout),
       clientId: Number(clientId),
-      healthFacilityTypeId: Number(healthFacilityTypeId),
+      healthFacilityTypeId: Number(healthFacilityTypeId)
     };
+
+    console.log('payload : ', payload)
   
     const token = localStorage.getItem('access_token');
-    const method = id ? 'PUT' : 'POST';
-    const url = id ? `${base_url}/prestations/${id}` : `${base_url}/prestations`;
   
     try {
-      const res = await fetch(url, {
-        method,
-        headers: {
+      const res = await fetch(`${base_url}/prestations`, {
+        method: 'POST',
+        headers: { 
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
   
-      const responseData = await res.json();
+      const data = await res.json();
   
       if (res.ok) {
-        const message = id ? "✅ Prestation mise à jour avec succès !" : "🎉 Prestation enregistrée avec succès !";
-        setSuccessMessage(message);
-        toast.success(message);
-  
-        if (!id) {
-          // Si création, reset form
-          setAgenceId("3");
-          setDate('');
-          setCout('');
-          setCertificateNumber('');
-          setOtherAct('');
-          setCategoryId('');
-          setSubCategoryId('');
-          setClientId('');
-          setHealthFacilityTypeId('');
-        }
-  
+        setSuccessMessage("🎉 Prestation enregistrée avec succès !");
+        toast.success("🎉 Prestation enregistrée avec succès !");
+        
+        setAgenceId("3");
+        setDate('');
+        setCout('');
+        setCertificateNumber('');
+        setOtherAct('');
+        setCategoryId('');
+        setSubCategoryId('');
+        
       } else {
-        const errorMessage = responseData?.message || 'Une erreur est survenue';
+        const errorMessage = data?.message || 'Une erreur est survenue';
         toast.error(errorMessage);
       }
     } catch (error) {
@@ -182,7 +157,6 @@ useEffect(() => {
       toast.error('Erreur réseau ou serveur');
     }
   };
-  
   
 
   useEffect(() => {
@@ -202,19 +176,12 @@ useEffect(() => {
 
   return (
     <main style={styles.container}>
-      <Link href="/" style={{ display: 'inline-block' }}>
-  <img src="/logo.webp" alt="Logo Transvie" style={styles.logo} />
-    </Link>
+      <img src="/logo.webp" alt="Logo Transvie" style={styles.logo} />
        {/* Afficher les infos de l'utilisateur */}
        <div style={styles.userInfo}>
         <span>{userName ? `${userName}` : 'Bienvenue'}</span>
       </div>
-      <h2 style={{ 
-  ...styles.title, 
-  color: id ? '#8B4513' : '#0000FF' // Marron pour la modification, Bleu pour l'enregistrement
-}}>
-  {id ? 'Modification de prestation' : 'Enregistrement de prestation'}
-</h2>
+      <h2 style={styles.title}>Enregistrement de prestation</h2>
 
       {successMessage && (
         <div style={styles.successMessage}>
@@ -225,7 +192,7 @@ useEffect(() => {
         </div>
       )}
 
-      <Form form={form} onFinish={handleSubmit} layout="vertical" style={styles.form}>
+      <Form onFinish={handleSubmit} layout="vertical" style={styles.form}>
         <label>Agence {requiredMark}</label>
         <select required value={agenceId} onChange={(e) => setAgenceId(e.target.value)} style={styles.input}>
           <option value="">-- Choisissez une agence --</option>
@@ -357,7 +324,7 @@ name="certificateNumber" >
 </Form.Item>
 
 
-        <button type="submit" style={styles.button}>Enregistrer</button>
+        <button type="submit" style={styles.button}>Modifier</button>
         </Form>
 
       <div style={styles.linkWrapper}>
