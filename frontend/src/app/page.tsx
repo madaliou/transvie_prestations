@@ -95,7 +95,7 @@ const sortedClients = [...clients].sort((a, b) => a.name.localeCompare(b.name));
     }
   }, [categoryId, categoriesList]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async () => {
     //e.preventDefault();
   
     const payload = {

@@ -72,6 +72,27 @@ const handleCancel = () => {
   };
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [res1, res2, res3] = await Promise.all([
+          fetch(`${base_url}/prestations/kpis`),
+          fetch(`${base_url}/categories`),
+          fetch(`${base_url}/clients`)
+        ]);
+        const [dataKpis, dataCats, dataClients] = await Promise.all([
+          res1.json(),
+          res2.json(),
+          res3.json()
+        ]);
+        setKpis(dataKpis);
+        setCategories(dataCats);
+        setClients(dataClients);
+      } catch (err) {
+        console.error("Erreur de chargement des KPIs ou catégories", err);
+      } finally {
+        setLoading(false);
+      }
+    };
     setIsClient(true);
     fetchData();
   }, []);
@@ -152,35 +173,6 @@ const handleCancel = () => {
   /* const filteredData = kpis.filter((item) =>
     Object.values(item).join(" ").toLowerCase().includes(searchText.toLowerCase())
   ); */
-
-  /* const handleDelete = async (record: any) => {
-    Modal.confirm({
-      title: 'Êtes-vous sûr de vouloir supprimer cette prestation ?',
-      content: 'Cette action est irréversible.',
-      onOk: async () => {
-        try {
-          const response = await fetch(`${base_url}/prestations/${record.id}`, {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-              // Si tu as besoin d'ajouter un token d'authentification
-              // 'Authorization': `Bearer ${token}`,
-            },
-          });
-  
-          if (!response.ok) {
-            throw new Error('La suppression a échoué');
-          }
-          toast.success("Prestation supprimée avec succès!");
-  
-          fetchData();
-        } catch (error) {
-          console.log('suppression error : ', error)
-          toast.error('Une erreur est survenue lors de la suppression.');
-        }
-      },
-    });
-  }; */
 
 // ✅ Supprime le record
 const handleConfirmDelete = async () => {
@@ -264,7 +256,7 @@ const handleConfirmDelete = async () => {
             <Button
               type="primary"
               icon={<EditFilled />}
-              onClick={() => handleEdit(record)}
+              // onClick={() => handleEdit(record)}
             />
           </Tooltip>
           <Tooltip title="Supprimer">
