@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Country {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  agences   Agence[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Agence {
+  id         Int          @id @default(autoincrement())
+  name       String
+  countryId  Int
+  country    Country      @relation(fields: [countryId], references: [id])
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  Prestation Prestation[]
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String        @db.VarChar(255)
+  subcategories Subcategory[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Subcategory {
+  id          Int          @id @default(autoincrement())
+  categoryId  Int
+  name        String       @db.VarChar(255)
+  category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  prestations Prestation[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model Prestation {
+  id                   Int      @id @default(autoincrement())
+  agenceId             Int
+  actId                Int?
+  userId               Int?
+  date                 DateTime @db.Date
+  cout                 Decimal  @db.Decimal(10, 2)
+  otherAct             String?  @db.VarChar(255)
+  certificateNumber    String?  @db.VarChar(255)
+  clientId             Int
+  healthFacilityTypeId Int
+
+  client             Client             @relation(fields: [clientId], references: [id])
+  healthFacilityType HealthFacilityType @relation(fields: [healthFacilityTypeId], references: [id])
+
+  agence      Agence       @relation(fields: [agenceId], references: [id], onDelete: Cascade)
+  subcategory Subcategory? @relation(fields: [actId], references: [id], onDelete: Cascade)
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model User {
+  id        Int    @id @default(autoincrement())
+  firstname String @db.VarChar(255)
+  lastname  String @db.VarChar(255)
+  email     String @unique
+  password  String @db.VarChar(255)
+
+  prestations Prestation[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+model HealthFacilityType {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  prestations Prestation[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Client {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  prestations Prestation[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}

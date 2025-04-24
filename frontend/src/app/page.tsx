@@ -6,6 +6,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
+import { Select, Form} from 'antd';
+const {Option} = Select;
+//import Select from "react-select";
 
 export default function Home() {
   const router = useRouter();
@@ -19,14 +22,23 @@ export default function Home() {
   const [categoriesList, setCategoriesList] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState('');
   const [subCategoryId, setSubCategoryId] = useState('');
+  const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
+  const [healthFacilityTypes, setHealthFacilityTypes] = useState<{ id: number; name: string }[]>([]);
+  const [clientId, setClientId] = useState('');
+  const [healthFacilityTypeId, setHealthFacilityTypeId] = useState('');
   const [filteredSubcategories, setFilteredSubcategories] = useState<any[]>([]);
   const [otherAct, setOtherAct] = useState('');
   const requiredMark = <span style={{ color: 'red' }}>*</span>;
   const base_url = process.env.NEXT_PUBLIC_API_URL;
 
+  // Trier les clients par ordre alphabétique
+const sortedClients = [...clients].sort((a, b) => a.name.localeCompare(b.name));
+
+//const selectedClient = clientOptions.find(option => option.value === Number(clientId));
+
   useEffect(() => {
     // Vérification du token d'authentification
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (!token) {
       // Redirige l'utilisateur vers la page de login si le token est absent
       router.push('/login');
@@ -34,15 +46,13 @@ export default function Home() {
 
     // Récupérer le nom de l'utilisateur depuis le localStorage
     const user = JSON.parse(localStorage.getItem('user') || '{}'); 
-    console.log('get user ', user)// Supposons que le nom et prénom de l'utilisateur soient stockés sous la clé 'user'
-    if (user && user.firstName && user.lastName) {
-      setUserName(`${user.firstName} ${user.lastName}`);
+    if (user && user.firstname && user.lastname) {
+      setUserName(`${user.firstname} ${user.lastname}`);
     }
 
     const fetchAgences = async () => {
       const res = await  fetch(`${base_url}/agences`);
       const data = await res.json();
-      console.log('agences : ', data)
       setAgencesList(data);
     
       // Sélectionner Cotonou par défaut
@@ -52,61 +62,91 @@ export default function Home() {
   
     // Fonction pour récupérer les prestations
     const fetchCategoriesAndSubcategories = async () => {
-      const res = await fetch(`${base_url}/subcategories`);
+      const res = await fetch(`${base_url}/categories`);
       const data = await res.json();
       setCategoriesList(data);
+    };
+
+    // Fonction pour récupérer les prestations
+    const fetchClients = async () => {
+      const res = await fetch(`${base_url}/clients`);
+      const data = await res.json();
+      setClients(data);
+    };
+
+    // Fonction pour récupérer les prestations
+    const fetchHealthFacilityTypes = async () => {
+      const res = await fetch(`${base_url}/health-facility-types`);
+      const data = await res.json();
+      setHealthFacilityTypes(data);
     };
     
     fetchCategoriesAndSubcategories();
     fetchAgences();
+    fetchClients();
+    fetchHealthFacilityTypes();
   }, [base_url, router]);
 
   useEffect(() => {
     if (categoryId) {
-      const selected = categoriesList.find((cat) => cat.category_id === parseInt(categoryId));
+      const selected = categoriesList.find((cat) => cat.id === parseInt(categoryId));
       setFilteredSubcategories(selected?.subcategories || []);
       setSubCategoryId('');
     }
   }, [categoryId, categoriesList]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+    //e.preventDefault();
+  
     const payload = {
       agenceId: parseInt(agenceId),
       actId: parseInt(subCategoryId),
       date,
       otherAct,
       certificateNumber,
-      cout: parseFloat(cout)
+      cout: parseFloat(cout),
+      clientId: Number(clientId),
+      healthFacilityTypeId: Number(healthFacilityTypeId)
     };
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${base_url}/prestations`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
 
-    const data = await res.json();
-
-    if (data.message) {
-      setSuccessMessage("🎉 Prestation enregistrée avec succès !");
-      toast.success("🎉 Prestation enregistrée avec succès !");
-    }else{
-      toast.error('Une erreur est survenue')
+    console.log('payload : ', payload)
+  
+    const token = localStorage.getItem('access_token');
+  
+    try {
+      const res = await fetch(`${base_url}/prestations`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+  
+      const data = await res.json();
+  
+      if (res.ok) {
+        setSuccessMessage("🎉 Prestation enregistrée avec succès !");
+        toast.success("🎉 Prestation enregistrée avec succès !");
+        
+        // Reset form fields
+        setAgenceId("3");
+        setDate('');
+        setCout('');
+        setCertificateNumber('');
+        setOtherAct('');
+        setCategoryId('');
+        setSubCategoryId('');
+      } else {
+        const errorMessage = data?.message || 'Une erreur est survenue';
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Erreur réseau ou serveur');
     }
-
-    setAgenceId("3");
-    setDate('');
-    setCout('');
-    setCertificateNumber('')
-    setOtherAct('')
-    setCategoryId('')
-    setSubCategoryId('')
   };
+  
 
   useEffect(() => {
     if (successMessage) {
@@ -141,7 +181,8 @@ export default function Home() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} style={styles.form}>
+      {/* <form onSubmit={handleSubmit} style={styles.form}> */}
+      <Form onFinish={handleSubmit} layout="vertical" style={styles.form}>
         <label>Agence {requiredMark}</label>
         <select required value={agenceId} onChange={(e) => setAgenceId(e.target.value)} style={styles.input}>
           <option value="">-- Choisissez une agence --</option>
@@ -150,40 +191,81 @@ export default function Home() {
           ))}
         </select>
 
+       <label>Entreprise {requiredMark}</label>
+        {/* <Form.Item label={`Entreprise`} name="clientId" rules={[{ required: true, message: 'Veuillez sélectionner une entreprise' }]}> */}
+        <Select
+          allowClear
+          showSearch
+          placeholder="Filtrer par entreprise"
+          style={{ width: '100%', marginRight: 20, height: '100%' }}
+          optionFilterProp="children"
+          value={clientId || undefined} 
+          onChange={(value) => setClientId(value ?? null)}
+          filterOption={(input, option) =>
+            (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+          }
+        >
+          {sortedClients.map((client) => (
+            <Option key={client.id} value={client.id}>
+              {client.name}
+            </Option>
+          ))}
+              </Select>
+        {/* </Form.Item> */}
+
+        <label>Type de structure sanitaire {requiredMark}</label>
+        <Select
+          placeholder="-- Choisissez un type de structure sanitaire --"
+          style={{ width: '100%', marginRight: 20, height: '100%' }}
+          value={healthFacilityTypeId ? Number(healthFacilityTypeId) : undefined}
+          onChange={(value) => setHealthFacilityTypeId(String(value))}
+          showSearch
+          allowClear
+          optionFilterProp="children"
+        >
+          {healthFacilityTypes.map((a) => (
+            <Select.Option key={a.id} value={a.id}>
+              {a.name}
+            </Select.Option>
+          ))}
+        </Select>
+
         <label>Date {requiredMark}</label>
         <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} style={styles.input} />
 
         <label>Type de service  {requiredMark}</label>
-    <select
-      required
-      value={categoryId}
-      onChange={(e) => setCategoryId(e.target.value)}
-      style={styles.input}
-    >
-      <option value="">-- Choisissez un service --</option>
-      {categoriesList.map((cat) => (
-        <option key={cat.category_id} value={cat.category_id}>
-          {cat.category_name}
-        </option>
-      ))}
-    </select>
+              <Select
+        placeholder="Choisissez un service"
+        style={{ width: '100%', marginRight: 20, height: '100%' }}
+        value={categoryId ? parseInt(categoryId) : undefined}
+        onChange={(value) => setCategoryId(value.toString())}
+        showSearch
+        optionFilterProp="children"
+      >
+        {categoriesList.map((cat) => (
+          <Option key={cat.id} value={cat.id}>
+            {cat.name}
+          </Option>
+        ))}
+      </Select>
 
     {categoryId && (
   <>
-    <label>Acte  {requiredMark}</label>
-    <select
-      required
-      value={subCategoryId}
-      onChange={(e) => setSubCategoryId(e.target.value)}
-      style={styles.input}
-    >
-      <option value="">-- Choisissez un acte --</option>
-      {filteredSubcategories.map((sub) => (
-        <option key={sub.id} value={sub.id}>
-          {sub.name}
-        </option>
-      ))}
-    </select>
+    <label>Acte {requiredMark}</label>
+    <Select
+    placeholder="Choisissez un acte"
+    style={{ width: '100%', marginRight: 20, height: '100%' }}
+    value={subCategoryId ? parseInt(subCategoryId) : undefined}
+    onChange={(value) => setSubCategoryId(value.toString())}
+    showSearch
+    optionFilterProp="children"
+  >
+    {filteredSubcategories.map((sub) => (
+      <Option key={sub.id} value={sub.id}>
+        {sub.name}
+      </Option>
+    ))}
+  </Select>
   </>
 )}
 
@@ -214,7 +296,8 @@ export default function Home() {
         />
 
         <button type="submit" style={styles.button}>Enregistrer</button>
-      </form>
+        </Form>
+      {/* </form> */}
 
       <div style={styles.linkWrapper}>
       <Link href="/kpi" style={styles.link}>
@@ -261,7 +344,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '15px'
   },
   input: {
-    padding: '10px',
+    padding: '8px',
     fontSize: '16px',
     borderRadius: '6px',
     border: '1px solid #ccc',

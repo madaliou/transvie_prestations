@@ -19,7 +19,7 @@ export default function Login() {
     setErrorMessage('');
 
     try {
-      const res = await fetch(`${base_url}/login`, {
+      const res = await fetch(`${base_url}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -32,7 +32,7 @@ export default function Login() {
       }
 
       // Stockage du token dans le localStorage
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user))
 
       // Redirection vers la page d'accueil ou tableau de bord
