@@ -40,7 +40,9 @@ logs/
 
 # Dependencies folders
 frontend/node_modules/
-backend/node_modules/
+apis/node_modules/
+
+**/node_modules/
 
 # .gitmodules file in case you previously used submodules
 .gitmodules

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState } from 'react';
@@ -10,13 +12,14 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const base_url = process.env.NEXT_PUBLIC_API_URL;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
     try {
-      const res = await fetch('http://localhost:3001/api/login', {
+      const res = await fetch(`${base_url}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -29,7 +32,8 @@ export default function Login() {
       }
 
       // Stockage du token dans le localStorage
-      localStorage.setItem('token', data.token);
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user))
 
       // Redirection vers la page d'accueil ou tableau de bord
       router.push('/');
@@ -84,7 +88,7 @@ export default function Login() {
       </form>
 
       <p style={{ marginTop: '15px', textAlign: 'center' }}>
-        Pas encore de compte ? <a href="/register" style={{ color: '#007bff' }}>S'inscrire</a>
+        Pas encore de compte ? <a href="/register" style={{ color: '#007bff' }}>S&apos;inscrire</a>
       </p>
     </main>
   );
@@ -117,14 +121,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     flexDirection: 'column',
     gap: '15px'
-  },
-  input: {
-    padding: '10px',
-    fontSize: '16px',
-    borderRadius: '6px',
-    border: '1px solid #ccc',
-    backgroundColor: '#ffffff',
-    color: '#344767'
   },
   button: {
     padding: '12px',
