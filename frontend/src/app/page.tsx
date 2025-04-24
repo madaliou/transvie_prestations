@@ -201,6 +201,7 @@ useEffect(() => {
   };
 
   return (
+    
     <main style={styles.container}>
       <Link href="/" style={{ display: 'inline-block' }}>
   <img src="/logo.webp" alt="Logo Transvie" style={styles.logo} />
