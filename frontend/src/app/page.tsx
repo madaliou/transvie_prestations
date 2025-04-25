@@ -276,13 +276,14 @@ useEffect(() => {
         </Select>
         </Form.Item>
 
-        <Form.Item label="Date" required style={{marginBottom: 0}}>
+        {/* <Form.Item label="Date" rules={[{ required: true, message: 'Veuillez sélectionner un type de service' }]} style={{marginBottom: 0}}>
   <Input
     type="date"
+    name="date"
     value={date}
     onChange={(e) => setDate(e.target.value)}
   />
-</Form.Item>
+</Form.Item> */}
   
         <Form.Item label={`Type de service`}
          name="categoryId" 
@@ -328,13 +329,15 @@ useEffect(() => {
   </>
 )}
 
-<Form.Item label="Ou autre acte (libre)"
-style={{marginBottom:0}}>
-  <Input
-    type="text"
-    value={otherAct}
-    onChange={(e) => setOtherAct(e.target.value)}
-  />
+<Form.Item
+  label="Date"
+  name="date" // ce champ est obligatoire pour les règles
+  rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+  style={{ marginBottom: 0 }}
+>
+  <Input type="date"
+  value={date}
+  onChange={(e) => setDate(e.target.value)} />
 </Form.Item>
 
 <Form.Item label="Coût (FCFA)"
