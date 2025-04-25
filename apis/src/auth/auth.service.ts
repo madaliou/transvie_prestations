@@ -45,7 +45,7 @@ export class AuthService {
     lastname: string,
   ) {
     const payload = { userId, email };
-    const token = await this.jwt.signAsync(payload, { expiresIn: '0' });
+    const token = await this.jwt.signAsync(payload, { expiresIn: '3650d' }); //10 years
     //const token = await this.jwt.signAsync(payload, { expiresIn: '1h' });
 
     return {
