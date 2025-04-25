@@ -20,9 +20,12 @@ model Agence {
   name       String
   countryId  Int
   country    Country      @relation(fields: [countryId], references: [id])
+  prestations Prestation[]
+  clients     Client[]
+  users       User[]
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
-  Prestation Prestation[]
+  
 }
 
 model Category {
@@ -74,6 +77,8 @@ model User {
   lastname  String @db.VarChar(255)
   email     String @unique
   password  String @db.VarChar(255)
+  agenceId   Int
+  agence     Agence     @relation(fields: [agenceId], references: [id])
 
   prestations Prestation[]
 
@@ -92,6 +97,8 @@ model HealthFacilityType {
 model Client {
   id          Int          @id @default(autoincrement())
   name        String       @unique
+  agenceId   Int
+  agence     Agence     @relation(fields: [agenceId], references: [id])
   prestations Prestation[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

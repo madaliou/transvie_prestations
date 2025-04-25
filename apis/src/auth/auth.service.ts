@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import * as dayjs from 'dayjs'; // Assure-toi d'avoir installé dayjs : yarn add dayjs
 
 @Injectable()
 export class AuthService {
@@ -45,12 +46,12 @@ export class AuthService {
     lastname: string,
   ) {
     const payload = { userId, email };
-    const token = await this.jwt.signAsync(payload, { expiresIn: '0' });
+    const token = await this.jwt.signAsync(payload, { expiresIn: '3650d' }); 
     //const token = await this.jwt.signAsync(payload, { expiresIn: '1h' });
 
     return {
       access_token: token,
       user: { id: userId, email, firstname, lastname },
     };
-  }
+  } 
 }
