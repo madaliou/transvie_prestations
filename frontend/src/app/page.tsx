@@ -6,19 +6,19 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
-import { Select, Form, Input} from 'antd';
+import { Select, Form, Input, Button} from 'antd';
 const {Option} = Select;
 //import Select from "react-select";
 
 export default function Home() {
   const router = useRouter();
   const [date, setDate] = useState('');
-  const [agenceId, setAgenceId] = useState('');
   const [cout, setCout] = useState('');
   const [certificateNumber, setCertificateNumber] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [agencesList, setAgencesList] = useState<{ id: number; name: string }[]>([]);
-  const [userName, setUserName] = useState<string>(''); // Ajouter l'état pour le nom de l'utilisateur
+  //const [agencesList, setAgencesList] = useState<{ id: number; name: string }[]>([]);
+  const [userName, setUserName] = useState<string>('');
+  const [agencyName, setAgencyName] = useState<string>('');
   const [categoriesList, setCategoriesList] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState('');
   const [subCategoryId, setSubCategoryId] = useState('');
@@ -28,11 +28,11 @@ export default function Home() {
   const [healthFacilityTypeId, setHealthFacilityTypeId] = useState('');
   const [filteredSubcategories, setFilteredSubcategories] = useState<any[]>([]);
   const [otherAct, setOtherAct] = useState('');
-  const requiredMark = <span style={{ color: 'red' }}>*</span>;
+  // const requiredMark = <span style={{ color: 'red' }}>*</span>;
   const [editData, setEditData] = useState<any>(null);
   const base_url = process.env.NEXT_PUBLIC_API_URL;
 
-const sortedClients = [...clients].sort((a, b) => a.name.localeCompare(b.name));
+const sortedClients = (Array.isArray(clients) ? clients : []).sort((a, b) => a.name.localeCompare(b.name));
 const searchParams = useSearchParams();
 const id = searchParams.get('id');
 
@@ -60,8 +60,6 @@ useEffect(() => {
       cout: editData.cout,
       certificateNumber: editData.certificateNumber,
     });
-
-    setAgenceId(String(editData.agenceId));
     setSubCategoryId(String(editData.actId));
     setDate(editData.date || '');
     setOtherAct(editData.otherAct || '');
@@ -82,26 +80,49 @@ useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}'); 
     if (user && user.firstname && user.lastname) {
       setUserName(`${user.firstname} ${user.lastname}`);
+      setAgencyName(user.agencyName)
     }
 
-    const fetchAgences = async () => {
+    /* const fetchAgences = async () => {
       const res = await  fetch(`${base_url}/agences`);
       const data = await res.json();
       setAgencesList(data);
     
       const cotonou = data.find((a: any) => a.name.toLowerCase() === 'cotonou');
       if (cotonou) setAgenceId(cotonou.id.toString());
-    };
+    }; */
       const fetchCategoriesAndSubcategories = async () => {
       const res = await fetch(`${base_url}/categories`);
       const data = await res.json();
       setCategoriesList(data);
     };
     const fetchClients = async () => {
-      const res = await fetch(`${base_url}/clients`);
-      const data = await res.json();
-      setClients(data);
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('Token non disponible');
+        return;
+      }
+    
+      try {
+        const res = await fetch(`${base_url}/clients`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+    
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+    
+        const data = await res.json();
+        setClients(data);
+      } catch (error) {
+        console.error('Erreur lors du chargement des clients', error);
+      }
     };
+    
 
     const fetchHealthFacilityTypes = async () => {
       const res = await fetch(`${base_url}/health-facility-types`);
@@ -110,7 +131,7 @@ useEffect(() => {
     };
     
     fetchCategoriesAndSubcategories();
-    fetchAgences();
+    //fetchAgences();
     fetchClients();
     fetchHealthFacilityTypes();
   }, [base_url, router]);
@@ -129,7 +150,6 @@ useEffect(() => {
     delete valuesCopy.subCategoryId;
     const payload = {
       ...valuesCopy,
-      agenceId: parseInt(agenceId),
       actId: parseInt(subCategoryId),
       date,
       otherAct,
@@ -162,7 +182,6 @@ useEffect(() => {
   
         if (!id) {
           // Si création, reset form
-          setAgenceId("3");
           setDate('');
           setCout('');
           setCertificateNumber('');
@@ -206,10 +225,14 @@ useEffect(() => {
       <Link href="/" style={{ display: 'inline-block' }}>
   <img src="/logo.webp" alt="Logo Transvie" style={styles.logo} />
     </Link>
-       {/* Afficher les infos de l'utilisateur */}
-       <div style={styles.userInfo}>
-        <span>{userName ? `${userName}` : 'Bienvenue'}</span>
+    <div style={styles.userInfo}>
+      <div style={styles.userName}>
+        {userName ? userName : 'Bienvenue'}
       </div>
+      <div style={styles.agencyName}>
+        {agencyName}
+      </div>
+    </div>
       <h2 style={{ 
   ...styles.title, 
   color: id ? '#8B4513' : '#0000FF' // Marron pour la modification, Bleu pour l'enregistrement
@@ -227,13 +250,6 @@ useEffect(() => {
       )}
 
       <Form form={form} onFinish={handleSubmit} layout="vertical" style={styles.form}>
-        <label>Agence {requiredMark}</label>
-        <select required value={agenceId} onChange={(e) => setAgenceId(e.target.value)} style={styles.input}>
-          <option value="">-- Choisissez une agence --</option>
-          {agencesList.map((a) => (
-            <option key={a.id} value={a.id}>{a.name}</option>
-          ))}
-        </select>
 
         <Form.Item label={`Entreprise`} name="clientId" style={{ marginBottom: 0 }} rules={[{ required: true, message: 'Veuillez sélectionner une entreprise' }]}>
         <Select
@@ -276,13 +292,14 @@ useEffect(() => {
         </Select>
         </Form.Item>
 
-        <Form.Item label="Date" required style={{marginBottom: 0}}>
-  <Input
-    type="date"
-    value={date}
-    onChange={(e) => setDate(e.target.value)}
-  />
-</Form.Item>
+        {/* <Form.Item label="Date" rules={[{ required: true, message: 'Veuillez sélectionner un type de service' }]} style={{marginBottom: 0}}>
+          <Input
+            type="date"
+            name="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </Form.Item> */}
   
         <Form.Item label={`Type de service`}
          name="categoryId" 
@@ -328,13 +345,15 @@ useEffect(() => {
   </>
 )}
 
-<Form.Item label="Ou autre acte (libre)"
-style={{marginBottom:0}}>
-  <Input
-    type="text"
-    value={otherAct}
-    onChange={(e) => setOtherAct(e.target.value)}
-  />
+<Form.Item
+  label="Date"
+  name="date" // ce champ est obligatoire pour les règles
+  rules={[{ required: true, message: 'Veuillez sélectionner une date' }]}
+  style={{ marginBottom: 0 }}
+>
+  <Input type="date"
+  value={date}
+  onChange={(e) => setDate(e.target.value)} />
 </Form.Item>
 
 <Form.Item label="Coût (FCFA)"
@@ -348,7 +367,6 @@ name="cout" rules={[{ required: true, message: 'Veuillez saisir un coût'}]}>
 </Form.Item>
 
 <Form.Item label="Numero d&apos;attestation"
-style={{marginBottom:0}}
 name="certificateNumber" >
   <Input
     type="number"
@@ -356,9 +374,11 @@ name="certificateNumber" >
     onChange={(e) => setCertificateNumber(e.target.value)}
   />
 </Form.Item>
-
-
-        <button type="submit" style={styles.button}>Enregistrer</button>
+<Form.Item style={{ marginBottom: 0 }}>
+          <Button type="primary" htmlType="submit" block style={styles.button}>
+            S’inscrire
+          </Button>
+        </Form.Item>
         </Form>
 
       <div style={styles.linkWrapper}>
@@ -470,12 +490,21 @@ const styles: { [key: string]: React.CSSProperties } = {
     top: '20px',
     right: '30px',
     display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
+    flexDirection: 'column', 
+    alignItems: 'flex-end',
     fontSize: '16px',
     fontWeight: '600',
-    color: '#344767'
   },
+  
+  userName: {
+    color: '#344767', 
+  },
+  
+  agencyName: {
+    color: '#5e72e4', 
+    fontSize: '14px',
+    fontWeight: '500',
+  },  
   linkWrapper: {
     marginTop: '20px',
     marginBottom: '10px',

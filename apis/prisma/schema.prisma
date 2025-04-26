@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  seed     = "ts-node ./prisma/seeds/seed.ts"
 }
 
 datasource db {
@@ -8,24 +9,27 @@ datasource db {
 }
 
 model Country {
-  id        Int      @id @default(autoincrement())
-  name      String   @unique
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
   agences   Agence[]
+  deletedAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Agence {
-  id         Int          @id @default(autoincrement())
-  name       String
-  countryId  Int
-  country    Country      @relation(fields: [countryId], references: [id])
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  countryId   Int
+  country     Country      @relation(fields: [countryId], references: [id])
   prestations Prestation[]
   clients     Client[]
   users       User[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
-  
+  deletedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {
@@ -33,6 +37,7 @@ model Category {
   name          String        @db.VarChar(255)
   subcategories Subcategory[]
 
+  deletedAt DateTime?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 }
@@ -44,6 +49,7 @@ model Subcategory {
   category    Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   prestations Prestation[]
 
+  deletedAt DateTime?
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 }
@@ -52,7 +58,7 @@ model Prestation {
   id                   Int      @id @default(autoincrement())
   agenceId             Int
   actId                Int?
-  userId               Int?
+  userId               Int
   date                 DateTime @db.Date
   cout                 Decimal  @db.Decimal(10, 2)
   otherAct             String?  @db.VarChar(255)
@@ -65,31 +71,40 @@ model Prestation {
 
   agence      Agence       @relation(fields: [agenceId], references: [id], onDelete: Cascade)
   subcategory Subcategory? @relation(fields: [actId], references: [id], onDelete: Cascade)
-  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  deletedAt   DateTime?
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 }
 
 model User {
-  id        Int    @id @default(autoincrement())
-  firstname String @db.VarChar(255)
-  lastname  String @db.VarChar(255)
-  email     String @unique
-  password  String @db.VarChar(255)
-  agenceId   Int
-  agence     Agence     @relation(fields: [agenceId], references: [id])
+  id                       Int       @id @default(autoincrement())
+  firstname                String    @db.VarChar(255)
+  lastname                 String    @db.VarChar(255)
+  email                    String    @unique
+  password                 String    @db.VarChar(255)
+  phone                    String?   @db.VarChar(20)
+  role                     String    @default("agent")
+  isActive                 Boolean   @default(true)
+  lastLoginAt              DateTime?
+  profilePictureUrl        String?   @db.VarChar(255)
+  resetPasswordToken       String?   @db.VarChar(255)
+  resetPasswordTokenExpiry DateTime?
+  deletedAt                DateTime?
+  agenceId                 Int
+  agence                   Agence    @relation(fields: [agenceId], references: [id])
 
   prestations Prestation[]
-
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt   DateTime?    @default(now())
+  updatedAt   DateTime?    @updatedAt
 }
 
 model HealthFacilityType {
   id          Int          @id @default(autoincrement())
   name        String       @unique
   prestations Prestation[]
+  deletedAt   DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -97,9 +112,11 @@ model HealthFacilityType {
 model Client {
   id          Int          @id @default(autoincrement())
   name        String       @unique
-  agenceId   Int
-  agence     Agence     @relation(fields: [agenceId], references: [id])
+  agenceId    Int
+  agence      Agence       @relation(fields: [agenceId], references: [id])
   prestations Prestation[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

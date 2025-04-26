@@ -2,7 +2,7 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-async function main() {
+export async function seedCategories() {
   const categories = [
     {
       name: 'Consultation de médecine générale et préventive',
@@ -77,15 +77,6 @@ async function main() {
         },
       },
     });
-    console.log(`✅ ${createdCategory.name} créée`);
   }
+  console.log(`✅ Catégories et actes créés avec succès`);
 }
-
-main()
-  .catch((e) => {
-    console.error('❌ Erreur lors du seed', e);
-    process.exit(1);
-  })
-  .finally(() => {
-    prisma.$disconnect();
-  });

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePrestationDto } from './dto/create-prestation.dto';
 import { UpdatePrestationDto } from './dto/update-prestation.dto';
@@ -8,9 +8,19 @@ export class PrestationService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: number, dto: CreatePrestationDto) {
+    const user = await this.prisma.user.findUnique({
+          where: { id: userId },
+          include: { agence: true },
+        });
+      
+        if (!user?.agence) {
+          throw new BadRequestException("Aucune agence liée à cet utilisateur.");
+        }
+      
+        const agenceId = user.agence.id;
     return this.prisma.prestation.create({
       data: {
-        agenceId: dto.agenceId,
+        agenceId,
         actId: dto.actId,
         date: new Date(dto.date),
         cout: dto.cout,
@@ -23,25 +33,28 @@ export class PrestationService {
     });
   }
 
-  async findAllWithDetails() {
+  async findAllWithDetails(userAgenceId: number) {
     return this.prisma.prestation.findMany({
+      where: {
+        agenceId: userAgenceId,
+      },
       include: {
         agence: {
-          select: { id:true, name: true },
+          select: { id: true, name: true },
         },
         subcategory: {
           select: { id: true, name: true },
         },
         client: {
-          select: { id: true, name: true}
+          select: { id: true, name: true },
         },
       },
       orderBy: {
-        date: 'desc',
+        id: 'desc',
       },
     });
   }
-
+  
   async findOne(id: number) {
     return this.prisma.prestation.findUnique({
       where: { id },
@@ -63,7 +76,6 @@ export class PrestationService {
     return this.prisma.prestation.update({
       where: { id },
       data: {
-        agenceId: dto.agenceId,
         actId: dto.actId,
         date: dto.date ? new Date(dto.date) : undefined,
         cout: dto.cout,

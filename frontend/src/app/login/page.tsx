@@ -31,11 +31,9 @@ export default function Login() {
         throw new Error(data.message || 'Erreur lors de la connexion.');
       }
 
-      // Stockage du token dans le localStorage
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('user', JSON.stringify(data.user))
 
-      // Redirection vers la page d'accueil ou tableau de bord
       router.push('/');
 
     } catch (err: any) {
@@ -160,7 +158,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   input: {
     width: '100%',
     padding: '10px',
-    paddingRight: '40px', // pour faire de la place à l’icône
+    paddingRight: '40px',
     fontSize: '16px',
     borderRadius: '6px',
     border: '1px solid #ccc',

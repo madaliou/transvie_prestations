@@ -7,7 +7,7 @@ export class SubcategoryService {
     async findAll() {
         return this.prisma.subcategory.findMany({
           include: {
-            category: true, // inclut les sous-catégories associées
+            category: true,
           },
           orderBy: {
             id: 'asc',

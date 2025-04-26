@@ -2,9 +2,6 @@ import { IsOptional, IsNumber, IsString, IsDateString } from 'class-validator';
 
 export class CreatePrestationDto {
   @IsNumber()
-  agenceId: number;
-
-  @IsNumber()
   @IsOptional()
   actId?: number;
 
@@ -23,8 +20,8 @@ export class CreatePrestationDto {
   certificateNumber?: string;
 
   @IsNumber()
-  clientId?: number;
+  clientId: number;
 
   @IsNumber()
-  healthFacilityTypeId?: number;
+  healthFacilityTypeId: number;
 }
