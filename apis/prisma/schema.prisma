@@ -27,7 +27,7 @@ model Agence {
   clients     Client[]
   users       User[]
   deletedAt   DateTime?
-
+  isMain      Boolean      @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

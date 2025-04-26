@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Agence` ADD COLUMN `isMain` BOOLEAN NOT NULL DEFAULT false;

@@ -11,6 +11,7 @@ export async function seedAgences(countries: any[]) {
     create: {
       name: 'Cotonou',
       countryId: benin.id,
+      isMain: true,
     },
   });
 
@@ -20,6 +21,7 @@ export async function seedAgences(countries: any[]) {
     create: {
       name: 'Glo Djigbé',
       countryId: benin.id,
+      isMain: false,
     },
   });
 
@@ -29,9 +31,10 @@ export async function seedAgences(countries: any[]) {
     create: {
       name: 'Dakar Siège',
       countryId: senegal.id,
+      isMain: true,
     },
   });
   console.log(`✅ Agences créés avec succès`);
 
-  return [cotonou, dakar];
+  return [cotonou, glo, dakar];
 }

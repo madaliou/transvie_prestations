@@ -18,7 +18,6 @@ export class PrestationController {
   @UseGuards(JwtAuthGuard)
   @Get('kpis')
   async getAllKpis(@Req() req) {
-  console.log('kpi userrr : ', req.user)
   const userAgenceId = req.user.agenceId;
   return this.prestationService.findAllWithDetails(userAgenceId);
 }

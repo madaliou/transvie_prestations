@@ -8,8 +8,8 @@ export async function seedCategories() {
       name: 'Consultation de médecine générale et préventive',
       subcategories: [
         'Consultations curatives générales',
-        'Actes d’infirmerie',
-        'Soins maternels et infantiles',
+        'Actes d’infirmerie( incision, suture, injection, transfusion, circoncision, pansement,….)',
+        'Soins maternels et infantiles et vaccinations liés aux CPN, et PN',
         'Autres actes préventifs',
       ],
     },
@@ -18,7 +18,7 @@ export async function seedCategories() {
       subcategories: [
         'Soins dentaires',
         'Consultations en dermatologie',
-        'Consultations gynécologie',
+        'Consultations gynécologie (y compris non obstétrique)',
         'Consultations ophtalmologie',
         'Consultations pédiatriques',
         'Consultations psychiatriques',
@@ -52,7 +52,7 @@ export async function seedCategories() {
     {
       name: 'Hospitalisation',
       subcategories: [
-        'Frais de lit',
+        'Frais de lit (en séjour ou en observation)',
         'Hospitalisation de jour',
         'Actes de chirurgie',
         'Autres actes internes',
