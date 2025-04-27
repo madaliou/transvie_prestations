@@ -1,3 +1,4 @@
+import 'dotenv/config'; // Charge automatiquement ton .env au tout début
 import { seedClients } from './clients.seed';
 import { seedCountries } from './countries.seed';
 import { seedAgences } from './agences.seed';

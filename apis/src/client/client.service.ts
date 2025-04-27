@@ -14,7 +14,7 @@ export class ClientService {
           name: true,
         },
         orderBy: {
-          id: 'asc',
+          name: 'asc',
         },
       });
     }

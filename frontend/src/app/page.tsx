@@ -6,7 +6,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { Select, Form, Input, Button } from "antd";
+import { Select, Form, Input, Button, Modal } from "antd";
+import { LogoutOutlined } from "@ant-design/icons";
 const { Option } = Select;
 //import Select from "react-select";
 
@@ -16,11 +17,11 @@ export default function Home() {
   const [cout, setCout] = useState("");
   const [certificateNumber, setCertificateNumber] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  //const [agencesList, setAgencesList] = useState<{ id: number; name: string }[]>([]);
   const [userName, setUserName] = useState<string>("");
   const [agencyName, setAgencyName] = useState<string>("");
-  const [categoriesList, setCategoriesList] = useState<any[]>([]);
-  const [categoryId, setCategoryId] = useState("");
+  //const [categoriesList, setCategoriesList] = useState<any[]>([]);
+  const [subCategoriesList, setSubCategoriesList] = useState<any[]>([]);
+  //const [categoryId, setCategoryId] = useState("");
   const [subCategoryId, setSubCategoryId] = useState("");
   const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
   const [healthFacilityTypes, setHealthFacilityTypes] = useState<
@@ -28,19 +29,24 @@ export default function Home() {
   >([]);
   const [clientId, setClientId] = useState("");
   const [healthFacilityTypeId, setHealthFacilityTypeId] = useState("");
-  const [filteredSubcategories, setFilteredSubcategories] = useState<any[]>([]);
   const [otherAct, setOtherAct] = useState("");
-  // const requiredMark = <span style={{ color: 'red' }}>*</span>;
   const [editData, setEditData] = useState<any>(null);
   const base_url = process.env.NEXT_PUBLIC_API_URL;
 
-  const sortedClients = (Array.isArray(clients) ? clients : []).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  // Chargement des données avec l'ID
+  const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+  
+    const showLogoutModal = () => {
+      setIsLogoutModalVisible(true);
+  };
+  
+  const handleCancel = () => {
+    setIsLogoutModalVisible(false);
+  };
+
   useEffect(() => {
     if (id) {
       fetch(`${base_url}/prestations/${id}`)
@@ -52,7 +58,9 @@ export default function Home() {
 
   const [form] = Form.useForm();
   useEffect(() => {
+    
     if (editData) {
+      console.log('edit data : ', editData)
       form.setFieldsValue({
         clientId: editData.clientId,
         healthFacilityTypeId: editData.healthFacilityTypeId,
@@ -70,7 +78,7 @@ export default function Home() {
       setCout(editData.cout ? editData.cout.toString() : "");
       setClientId(String(editData.clientId));
       setHealthFacilityTypeId(String(editData.healthFacilityTypeId));
-      setCategoryId(String(editData.categoryId));
+      //setCategoryId(String(editData.categoryId));
     }
   }, [editData]);
 
@@ -86,19 +94,18 @@ export default function Home() {
       setAgencyName(user.agencyName);
     }
 
-    /* const fetchAgences = async () => {
-      const res = await  fetch(`${base_url}/agences`);
-      const data = await res.json();
-      setAgencesList(data);
-    
-      const cotonou = data.find((a: any) => a.name.toLowerCase() === 'cotonou');
-      if (cotonou) setAgenceId(cotonou.id.toString());
-    }; */
-    const fetchCategoriesAndSubcategories = async () => {
+    /*const fetchCategoriesAndSubcategories = async () => {
       const res = await fetch(`${base_url}/categories`);
       const data = await res.json();
       setCategoriesList(data);
+    };*/
+
+    const fetchSubcategories = async () => {
+      const res = await fetch(`${base_url}/subcategories`);
+      const data = await res.json();
+      setSubCategoriesList(data);
     };
+
     const fetchClients = async () => {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -132,13 +139,13 @@ export default function Home() {
       setHealthFacilityTypes(data);
     };
 
-    fetchCategoriesAndSubcategories();
-    //fetchAgences();
+    //fetchCategoriesAndSubcategories();
+    fetchSubcategories();
     fetchClients();
     fetchHealthFacilityTypes();
   }, [base_url, router]);
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (categoryId) {
       const selected = categoriesList.find(
         (cat) => cat.id === parseInt(categoryId)
@@ -146,7 +153,7 @@ export default function Home() {
       setFilteredSubcategories(selected?.subcategories || []);
       setSubCategoryId("");
     }
-  }, [categoryId, categoriesList]);
+  }, [categoryId, categoriesList, subCategoriesList]); */
 
   const handleSubmit = async (values: any) => {
     const valuesCopy = { ...values };
@@ -183,21 +190,33 @@ export default function Home() {
 
       if (res.ok) {
         const message = id
-          ? "✅ Prestation mise à jour avec succès !"
+          ? "Prestation mise à jour avec succès !"
           : "🎉 Prestation enregistrée avec succès !";
         setSuccessMessage(message);
         toast.success(message);
+        if (id) router.push('/kpi')
 
         if (!id) {
+          console.log('je suis sans id')
           // Si création, reset form
           setDate("");
           setCout("");
           setCertificateNumber("");
           setOtherAct("");
-          setCategoryId("");
+          //setCategoryId("");
           setSubCategoryId("");
           setClientId("");
           setHealthFacilityTypeId("");
+          form.setFieldsValue({
+            clientId: "",
+            healthFacilityTypeId: "",
+            //categoryId: "",
+            subCategoryId: "",
+            date: "",
+            otherAct: "",
+            cout: "",
+            certificateNumber: "",
+          });
         }
       } else {
         const errorMessage = responseData?.message || "Une erreur est survenue";
@@ -232,6 +251,9 @@ export default function Home() {
       <div style={styles.userInfo}>
         <div style={styles.userName}>{userName ? userName : "Bienvenue"}</div>
         <div style={styles.agencyName}>{agencyName}</div>
+        <div style={styles.logoutIcon} onClick={showLogoutModal}>
+          <LogoutOutlined />
+        </div>
       </div>
       <h2
         style={{
@@ -272,7 +294,7 @@ export default function Home() {
           <Select
             allowClear
             showSearch
-            placeholder="Filtrer par entreprise"
+            placeholder="Choisissez une entreprise"
             style={{ width: "100%", marginRight: 20 }}
             optionFilterProp="children"
             value={clientId || undefined}
@@ -283,7 +305,7 @@ export default function Home() {
                 .includes(input.toLowerCase())
             }
           >
-            {sortedClients.map((client) => (
+            {clients.map((client) => (
               <Option key={client.id} value={client.id}>
                 {client.name}
               </Option>
@@ -321,27 +343,13 @@ export default function Home() {
           </Select>
         </Form.Item>
 
-        {/* <Form.Item label="Date" rules={[{ required: true, message: 'Veuillez sélectionner un type de service' }]} style={{marginBottom: 0}}>
-          <Input
-            type="date"
-            name="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </Form.Item> */}
-
-        <Form.Item
+        {/* <Form.Item
           label={`Type de service`}
           name="categoryId"
-          rules={[
-            {
-              required: true,
-              message: "Veuillez sélectionner un type de service",
-            },
-          ]}
           style={{ marginBottom: 0 }}
         >
           <Select
+          allowClear
             placeholder="Choisissez un service"
             style={{ width: "100%", marginRight: 20, height: "100%" }}
             value={categoryId ? parseInt(categoryId) : undefined}
@@ -355,39 +363,38 @@ export default function Home() {
               </Option>
             ))}
           </Select>
-        </Form.Item>
+        </Form.Item> */}
 
-        {categoryId && (
-          <>
-            <Form.Item
-              label={`Actes`}
-              name="subCategoryId"
-              rules={[
-                { required: true, message: "Veuillez sélectionner un acte" },
-              ]}
-              style={{ marginBottom: 0 }}
-            >
-              <Select
-                placeholder="Choisissez un acte"
-                style={{ width: "100%", marginRight: 20, height: "100%" }}
-                value={subCategoryId ? parseInt(subCategoryId) : undefined}
-                onChange={(value) => setSubCategoryId(value.toString())}
-                showSearch
-                optionFilterProp="children"
-              >
-                {filteredSubcategories.map((sub) => (
-                  <Option key={sub.id} value={sub.id}>
-                    {sub.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </>
-        )}
+        <Form.Item
+  label="Actes"
+  name="subCategoryId"
+  rules={[
+    { required: true, message: "Veuillez sélectionner un acte" },
+  ]}
+  style={{ marginBottom: 0 }}
+>
+  <Select
+    placeholder="Choisissez un acte"
+    style={{ width: "100%", marginRight: 20, height: "100%" }}
+    value={ subCategoryId ? Number(subCategoryId) : undefined
+    }
+    onChange={(value) => setSubCategoryId(String(value))}
+    showSearch
+    optionFilterProp="children"
+  >
+    {
+  subCategoriesList.map((sub) => (
+    <Select.Option key={sub.id} value={sub.id}>
+      {sub.name}
+    </Select.Option>
+  ))
+}
+  </Select>
+</Form.Item>
 
         <Form.Item
           label="Date"
-          name="date" // ce champ est obligatoire pour les règles
+          name="date"
           rules={[
             { required: true, message: "Veuillez sélectionner une date" },
           ]}
@@ -395,7 +402,7 @@ export default function Home() {
         >
           <Input
             type="date"
-            value={date}
+            value={date ? date.split('T')[0] : ''}
             onChange={(e) => setDate(e.target.value)}
           />
         </Form.Item>
@@ -422,7 +429,7 @@ export default function Home() {
         </Form.Item>
         <Form.Item style={{ marginBottom: 0 }}>
           <Button type="primary" htmlType="submit" block style={styles.button}>
-            S’inscrire
+            Enregistrer
           </Button>
         </Form.Item>
       </Form>
@@ -433,11 +440,18 @@ export default function Home() {
         </Link>
       </div>
 
-      <div style={styles.logoutLinkWrapper}>
-        <button onClick={handleLogout} style={styles.logoutLink}>
-          Se déconnecter 🔓
-        </button>
-      </div>
+      <Modal
+              title="Confirmation de déconnexion"
+              open={isLogoutModalVisible}
+              onCancel={handleCancel}
+              onOk={handleLogout}
+              okText="Confirmer"
+              cancelText="Annuler"
+              okButtonProps={{ danger: true }}
+            >
+              <p>Êtes-vous sûr de vouloir vous déconnecter?</p>
+            </Modal>
+
     </main>
   );
 }
@@ -543,12 +557,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 
   userName: {
-    color: "#344767",
+    color: "#1A1A1A", 
+    fontSize: "18px", 
+    fontWeight: 600, 
   },
 
   agencyName: {
     color: "#5e72e4",
-    fontSize: "14px",
+    fontSize: "18px",
     fontWeight: "500",
   },
   linkWrapper: {
@@ -563,17 +579,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
     cursor: "pointer",
   },
-  logoutLinkWrapper: {
-    marginTop: "30px",
-    textAlign: "center",
-  },
-  logoutLink: {
-    background: "none",
-    border: "none",
-    color: "#dc3545",
-    textDecoration: "underline",
-    fontSize: "16px",
-    fontWeight: 600,
+  logoutIcon: {
+    marginTop: "8px",
+    fontSize: "20px",
+    color: "#888",
     cursor: "pointer",
+    transition: "color 0.3s"
   },
 };

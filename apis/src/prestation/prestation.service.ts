@@ -34,7 +34,7 @@ export class PrestationService {
   }
 
   async findAllWithDetails(userAgenceId: number) {
-    return this.prisma.prestation.findMany({
+    const prestations = await this.prisma.prestation.findMany({
       where: {
         agenceId: userAgenceId,
       },
@@ -53,10 +53,16 @@ export class PrestationService {
         id: 'desc',
       },
     });
+  
+    // On reformate les dates
+    return prestations.map((prestation) => ({
+      ...prestation,
+      date: prestation.date ? prestation.date.toISOString().split('T')[0] : null,
+    }));
   }
   
   async findOne(id: number) {
-    return this.prisma.prestation.findUnique({
+    const prestation = await this.prisma.prestation.findUnique({
       where: { id },
       include: {
         agence: {
@@ -70,7 +76,15 @@ export class PrestationService {
         },
       },
     });
+  
+    if (!prestation) return null;
+  
+    return {
+      ...prestation,
+      date: prestation.date ? prestation.date.toISOString().split('T')[0] : null,
+    };
   }
+  
 
   async update(id: number, dto: UpdatePrestationDto) {
     return this.prisma.prestation.update({

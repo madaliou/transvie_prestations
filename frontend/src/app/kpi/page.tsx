@@ -81,7 +81,7 @@ const handleCancel = () => {
           },
         }),
 
-        fetch(`${base_url}/agences`, {
+        fetch(`${base_url}/agences/country`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ const handleCancel = () => {
           fetchWithAuth(`${base_url}/prestations/kpis`),
           fetch(`${base_url}/categories`).then(res => res.json()), // catégories sont publiques donc pas besoin de token
           fetchWithAuth(`${base_url}/clients`),
-          fetchWithAuth(`${base_url}/agences`) // <-- ajout ici
+          fetchWithAuth(`${base_url}/agences/country`)
         ]);
   
         setKpis(dataKpis);
@@ -161,17 +161,21 @@ const handleCancel = () => {
         selectedClientId === null || item.client?.id === selectedClientId;
       const matchesAgence =
         selectedAgenceId === null || item.agence?.id === selectedAgenceId;
-      const matchesSearch = Object.values(item)
+      
+      const textToSearch = [
+        item.client?.name,
+        item.subcategory.name, 
+      ]
+        .filter(Boolean) 
         .join(" ")
-        .toLowerCase()
-        .includes(searchText.toLowerCase());
+        .toLowerCase();
+
+      const matchesSearch = textToSearch.includes(searchText.toLowerCase());
   
-      return matchesClient && matchesAgence && matchesSearch ;
+      return matchesClient && matchesAgence && matchesSearch;
     })
   : [];
 
-  const sortedClients = (Array.isArray(clients) ? clients : []).sort((a, b) => a.name.localeCompare(b.name));
-  const sortedAgences = (Array.isArray(agences) ? agences : []).sort((a, b) => a.name.localeCompare(b.name));
 
   const actIdToCategory = useMemo(() => {
     const map: Record<number, string> = {};
@@ -375,7 +379,7 @@ const handleConfirmDelete = async () => {
           (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
         }
       >
-        {sortedClients.map((client) => (
+        {clients.map((client) => (
           <Select.Option key={client.id} value={client.id}>
             {client.name}
           </Select.Option>
@@ -394,7 +398,7 @@ const handleConfirmDelete = async () => {
           (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
         }
       >
-        {sortedAgences.map((agence) => (
+        {agences.map((agence) => (
           <Select.Option key={agence.id} value={agence.id}>
             {agence.name}
           </Select.Option>
@@ -540,15 +544,21 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   chartRow: {
     display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexWrap: "wrap",            // autorise passage à la ligne en petit écran
+    justifyContent: "space-between", 
     gap: "20px",
     marginBottom: "40px",
   },
+  
   chartContainer: {
-    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "400px",              // largeur fixe pour garder sur une seule ligne
     minWidth: "300px",
   },
+  
+  
   totalCostContainer:{
     textAlign: "center",
     marginBottom: "50px",

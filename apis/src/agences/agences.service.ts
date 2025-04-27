@@ -13,7 +13,10 @@ export class AgencesService {
 
   findAll() {
     return this.prisma.agence.findMany({
-      include: { country: true }, // Si tu as lié aux pays
+      include: { country: true },
+      orderBy: {
+        name: 'asc'
+      }
     });
   }
 
@@ -27,5 +30,29 @@ export class AgencesService {
 
   remove(id: number) {
     return this.prisma.agence.delete({ where: { id } });
+  }
+  async countryAgencies(agenceId: number){
+    const agency = await this.prisma.agence.findUnique({
+      where: { id: agenceId },
+      select: { countryId: true },
+    });
+  
+    if (!agency?.countryId) {
+      return [];
+    }
+  
+    // Puis trouver toutes les agences du même countryId
+    return this.prisma.agence.findMany({
+      where: {
+        countryId: agency.countryId,
+      },
+      select: {
+        id: true,
+        name: true
+      },
+      orderBy: {
+        name: 'asc'
+      }
+    });
   }
 }

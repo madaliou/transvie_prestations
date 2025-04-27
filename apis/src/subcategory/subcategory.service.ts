@@ -5,13 +5,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class SubcategoryService {
     constructor(private prisma: PrismaService){}
     async findAll() {
-        return this.prisma.subcategory.findMany({
-          include: {
-            category: true,
-          },
-          orderBy: {
-            id: 'asc',
-          },
-        });
-      }
+      return this.prisma.subcategory.findMany({
+        select: {
+          id: true,
+          name: true,
+          category:{
+            select: {
+              id: true,
+            }
+          }
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+    }
 }
