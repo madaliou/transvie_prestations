@@ -60,7 +60,6 @@ export default function Home() {
   useEffect(() => {
     
     if (editData) {
-      console.log('edit data : ', editData)
       form.setFieldsValue({
         clientId: editData.clientId,
         healthFacilityTypeId: editData.healthFacilityTypeId,
