@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "ts-node prisma/seeds/categories.seed.ts"
+    "seed": "ts-node prisma/seeds/seed.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -31,6 +31,10 @@
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+<<<<<<< HEAD
+=======
+    "dayjs": "^1.11.13",
+>>>>>>> bba342c7eab0c368063214c50ded0b3b993a8cd1
     "dotenv": "^16.5.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

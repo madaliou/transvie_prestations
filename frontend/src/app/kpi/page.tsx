@@ -25,15 +25,17 @@ const Kpis = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [clients, setClients] = useState<any[]>([]);
+  const [agences, setAgences] = useState<any[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [selectedAgenceId, setSelectedAgenceId] = useState<number | null>(null);
 
-const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
-const [selectedRecord, setSelectedRecord] = useState<any>(null);
-const router = useRouter()
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const router = useRouter()
 
-const showDeleteModal = (record: any) => {
-  setSelectedRecord(record);
-  setIsDeleteModalVisible(true);
+  const showDeleteModal = (record: any) => {
+    setSelectedRecord(record);
+    setIsDeleteModalVisible(true);
 };
 
 const handleCancel = () => {
@@ -49,63 +51,131 @@ const handleCancel = () => {
   ];
 
   const fetchData = async () => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.error('Token non disponible');
+      return;
+    }
+  
     try {
-      const [res1, res2, res3] = await Promise.all([
-        fetch(`${base_url}/prestations/kpis`),
-        fetch(`${base_url}/categories`),
-        fetch(`${base_url}/clients`)
+      const [res1, res2, res3, res4] = await Promise.all([
+        fetch(`${base_url}/prestations/kpis`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        fetch(`${base_url}/categories`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        fetch(`${base_url}/clients`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+
+        fetch(`${base_url}/agences/country`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }),
       ]);
-      const [dataKpis, dataCats, dataClients] = await Promise.all([
+  
+      const [dataKpis, dataCats, dataClients, dataAgences] = await Promise.all([
         res1.json(),
         res2.json(),
-        res3.json()
+        res3.json(),
+        res4.json()
       ]);
+  
       setKpis(dataKpis);
       setCategories(dataCats);
       setClients(dataClients);
+      setAgences(dataAgences)
     } catch (err) {
-      console.error("Erreur de chargement des KPIs ou catégories", err);
+      console.error('Erreur de chargement des KPIs ou catégories', err);
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [res1, res2, res3] = await Promise.all([
-          fetch(`${base_url}/prestations/kpis`),
-          fetch(`${base_url}/categories`),
-          fetch(`${base_url}/clients`)
+        const token = localStorage.getItem('access_token'); // ou ton système pour récupérer le token
+        if (!token) {
+          throw new Error('Token non disponible');
+        }
+  
+        const fetchWithAuth = async (url: string) => {
+          const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (!res.ok) {
+            throw new Error(`Erreur HTTP: ${res.status}`);
+          }
+          return res.json();
+        };
+  
+        const [dataKpis, dataCats, dataClients, dataAgences] = await Promise.all([
+          fetchWithAuth(`${base_url}/prestations/kpis`),
+          fetch(`${base_url}/categories`).then(res => res.json()), // catégories sont publiques donc pas besoin de token
+          fetchWithAuth(`${base_url}/clients`),
+          fetchWithAuth(`${base_url}/agences/country`)
         ]);
-        const [dataKpis, dataCats, dataClients] = await Promise.all([
-          res1.json(),
-          res2.json(),
-          res3.json()
-        ]);
+  
         setKpis(dataKpis);
         setCategories(dataCats);
         setClients(dataClients);
+        setAgences(dataAgences); // <-- tu dois avoir un setAgences()
       } catch (err) {
-        console.error("Erreur de chargement des KPIs ou catégories", err);
+
+        console.error("Erreur de chargement des données", err);
       } finally {
         setLoading(false);
       }
     };
+  
     setIsClient(true);
     fetchData();
   }, []);
-
-  const filteredData = kpis.filter((item) => {
-    const matchesClient =
-      selectedClientId === null || item.client?.id === selectedClientId;
-    const matchesSearch = Object.values(item)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchText.toLowerCase());
   
-    return matchesClient && matchesSearch;
-  });
+
+  const filteredData = Array.isArray(kpis) 
+  ? kpis.filter((item) => {
+      const matchesClient =
+        selectedClientId === null || item.client?.id === selectedClientId;
+      const matchesAgence =
+        selectedAgenceId === null || item.agence?.id === selectedAgenceId;
+      
+      const textToSearch = [
+        item.client?.name,
+        item.subcategory.name, 
+      ]
+        .filter(Boolean) 
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch = textToSearch.includes(searchText.toLowerCase());
+  
+      return matchesClient && matchesAgence && matchesSearch;
+    })
+  : [];
+
 
   const actIdToCategory = useMemo(() => {
     const map: Record<number, string> = {};
@@ -158,8 +228,6 @@ const handleCancel = () => {
       Autre: kpi.otherAct ?? "-",
       NuméroAttestation: kpi.certificateNumber ?? "-",
     }));
-
-    console.log('csvdata : ', csvData)
 
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -291,6 +359,14 @@ const handleConfirmDelete = async () => {
       </div>
 
       <div style={styles.actions}>
+
+      <Input
+          placeholder="🔍 Rechercher..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={styles.searchInput}
+        />
+
       <Select
         allowClear
         showSearch
@@ -310,19 +386,26 @@ const handleConfirmDelete = async () => {
         ))}
       </Select>
 
-        <Input
-          placeholder="🔍 Rechercher..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          style={styles.searchInput}
-        />
-        <Button
-          type="primary"
-          icon={<DownloadOutlined />}
-          onClick={handleExportCSV}
-        >
-          Exporter en CSV
-        </Button>
+      <Select
+        allowClear
+        showSearch
+        placeholder="Filtrer par agence"
+        style={{ width: 300, marginRight: 20 }}
+        optionFilterProp="children"
+        value={selectedAgenceId}
+        onChange={(value) => setSelectedAgenceId(value ?? null)}
+        filterOption={(input, option) =>
+          (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+        }
+      >
+        {agences.map((agence) => (
+          <Select.Option key={agence.id} value={agence.id}>
+            {agence.name}
+          </Select.Option>
+        ))}
+      </Select>
+
+        
       </div>
 
       <Table
@@ -336,6 +419,19 @@ const handleConfirmDelete = async () => {
         bordered
         size="middle"
       />
+      <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+
+      <Button
+          type="primary"
+          icon={<DownloadOutlined />}
+          onClick={handleExportCSV}
+        >
+          Exporter en CSV
+        </Button>
+
+
+      </div>
+      
   <div style={styles.totalCostContainer}>
   <Title level={4}>
     Coût total :{" "}
@@ -448,15 +544,21 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   chartRow: {
     display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexWrap: "wrap",            // autorise passage à la ligne en petit écran
+    justifyContent: "space-between", 
     gap: "20px",
     marginBottom: "40px",
   },
+  
   chartContainer: {
-    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "400px",              // largeur fixe pour garder sur une seule ligne
     minWidth: "300px",
   },
+  
+  
   totalCostContainer:{
     textAlign: "center",
     marginBottom: "50px",

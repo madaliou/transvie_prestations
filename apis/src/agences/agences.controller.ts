@@ -7,9 +7,12 @@ import {
   Param,
   Delete,
   Put,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { AgencesService } from './agences.service';
 import { Prisma } from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('agences')
 export class AgencesController {
@@ -23,6 +26,13 @@ export class AgencesController {
   @Get()
   findAll() {
     return this.agencesService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('country')
+  countryAgencies(@Req() req){
+    const agenceId = req.user.agenceId
+    return this.agencesService.countryAgencies(agenceId)
   }
 
   @Get(':id')

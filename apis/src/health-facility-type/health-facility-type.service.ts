@@ -11,7 +11,7 @@ export class HealthFacilityTypeService {
             name: true,
           },
           orderBy: {
-            id: 'asc',
+            name: 'asc',
           },
         });
       }

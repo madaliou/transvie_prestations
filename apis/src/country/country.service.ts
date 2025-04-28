@@ -22,7 +22,11 @@ export class CountryService {
   }
 
   findAll() {
-    return this.prisma.country.findMany();
+    return this.prisma.country.findMany({
+      orderBy: {
+        name:'asc'
+      }
+    });
   }
 
   findOne(id: number) {

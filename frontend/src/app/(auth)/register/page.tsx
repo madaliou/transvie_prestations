@@ -2,26 +2,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react'; // Tu peux aussi utiliser un SVG ou un emoji si tu préfères
+import { Eye, EyeOff } from 'lucide-react';
+import { Form, Input, Button, Select } from 'antd';
 
 export default function Register() {
   const router = useRouter();
-  const [firstname, setFirstname] = useState('');
-  const [lastname, setLastname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [form] = Form.useForm();
+  const [agencesList, setAgencesList] = useState<{ id: number; name: string }[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const base_url = process.env.NEXT_PUBLIC_API_URL;
 
-  console.log('base url', base_url)
+  useEffect(() => {
+    const fetchAgences = async () => {
+      try {
+        const res = await fetch(`${base_url}/agences`);
+        const data = await res.json();
+        setAgencesList(data);
+      } catch (err) {
+        console.error('Erreur lors de la récupération des agences:', err);
+      }
+    };
+    fetchAgences();
+  }, [base_url]);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async (values: any) => {
     setErrorMessage('');
     setSuccessMessage('');
 
@@ -29,7 +38,7 @@ export default function Register() {
       const res = await fetch(`${base_url}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstname, lastname, email, password })
+        body: JSON.stringify(values),
       });
 
       const data = await res.json();
@@ -38,17 +47,12 @@ export default function Register() {
         throw new Error(data.message || 'Erreur lors de l’inscription.');
       }
 
-      setSuccessMessage("🎉 Compte créé avec succès !");
-      setFirstname('');
-     setLastname('');
-      setEmail('');
-      setPassword('');
+      setSuccessMessage('🎉 Compte créé avec succès !');
+      form.resetFields();
 
-      // Redirection vers login après 2 sec
       setTimeout(() => {
         router.push('/login');
       }, 2000);
-
     } catch (err: any) {
       setErrorMessage(err.message);
     }
@@ -71,56 +75,89 @@ export default function Register() {
         </div>
       )}
 
-      <form onSubmit={handleRegister} style={styles.form}>
-        <label>Prénom</label>
-        <input
-          type="text"
-          required
-          value={firstname}
-         onChange={(e) => setFirstname(e.target.value)}
-          style={styles.input}
-        />
-
-        <label>Nom</label>
-        <input
-          type="text"
-          required
-          value={lastname}
-          onChange={(e) => setLastname(e.target.value)}
-          style={styles.input}
-        />
-
-        <label>Email</label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
-        />
-
-<label>Mot de passe</label>
-<div style={styles.passwordContainer}>
-<div style={styles.inputWrapper}>
-  <input
-    type={showPassword ? 'text' : 'password'}
-    required
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    style={styles.input}
-    placeholder="Entrez votre mot de passe"
-  />
-  <span
-    onClick={() => setShowPassword(!showPassword)}
-    style={styles.eyeIcon}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleRegister}
+        style={styles.form}
+      >
+        <Form.Item
+  label="Agence"
+  name="agenceId"
+  rules={[{ required: true, message: "Veuillez sélectionner une agence." }]}
+  style={{ marginBottom: 0 }}
+>
+  <Select
+    placeholder="Sélectionnez une agence"
+    showSearch
+    optionFilterProp="children"
+    filterOption={(input, option) =>
+      (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+    }
   >
-    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-  </span>
-</div>
-</div>
+    {agencesList.map((agence) => (
+      <Select.Option key={agence.id} value={agence.id}>
+        {agence.name}
+      </Select.Option>
+    ))}
+  </Select>
+</Form.Item>
 
-        <button type="submit" style={styles.button}>S’inscrire</button>
-      </form>
+
+        <Form.Item
+          label="Prénom"
+          name="firstname"
+          rules={[{ required: true, message: "Veuillez entrer votre prénom." }]}
+          style={{ marginBottom: 0 }}
+        >
+          <Input placeholder="Entrez votre prénom" />
+        </Form.Item>
+
+        <Form.Item
+          label="Nom"
+          name="lastname"
+          rules={[{ required: true, message: "Veuillez entrer votre nom." }]}
+          style={{ marginBottom: 0 }}
+        >
+          <Input placeholder="Entrez votre nom" />
+        </Form.Item>
+
+        <Form.Item
+          label="Email"
+          name="email"
+          rules={[
+            { required: true, message: "Veuillez entrer votre email." },
+            { type: 'email', message: "Veuillez entrer un email valide." },
+          ]}
+          style={{ marginBottom: 0 }}
+        >
+          <Input placeholder="Entrez votre email" />
+        </Form.Item>
+
+        <Form.Item
+          label="Mot de passe"
+          name="password"
+          rules={[{ required: true, message: "Veuillez entrer votre mot de passe." }]}
+        >
+          <div style={styles.passwordContainer}>
+            <Input
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Entrez votre mot de passe"
+              suffix={
+                <span onClick={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
+              }
+            />
+          </div>
+        </Form.Item>
+
+        <Form.Item style={{ marginBottom: 0 }}>
+          <Button type="primary" htmlType="submit" block style={styles.button}>
+            S’inscrire
+          </Button>
+        </Form.Item>
+      </Form>
 
       <p style={{ marginTop: '15px', textAlign: 'center' }}>
         Déjà un compte ? <a href="/login" style={{ color: '#007bff' }}>Connexion</a>
@@ -185,39 +222,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '16px',
     textAlign: 'center'
   },
-
   passwordContainer: {
     position: 'relative'
   },
-  togglePassword: {
-    position: 'absolute',
-    top: '50%',
-    right: '10px',
-    transform: 'translateY(-50%)',
-    cursor: 'pointer',
-    color: '#007bff'
-  },
-  inputWrapper: {
-    position: 'relative',
-    width: '100%'
-  },
-  input: {
-    width: '100%',
-    padding: '10px',
-    paddingRight: '40px', // pour faire de la place à l’icône
-    fontSize: '16px',
-    borderRadius: '6px',
-    border: '1px solid #ccc',
-    backgroundColor: '#ffffff',
-    color: '#344767'
-  },
   eyeIcon: {
-    position: 'absolute',
-    top: '50%',
-    right: '12px',
-    transform: 'translateY(-50%)',
     cursor: 'pointer',
     color: '#007bff'
   }
-  
 };

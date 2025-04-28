@@ -3,4 +3,9 @@ export class CreateUserDto {
   lastname: string;
   email: string;
   password: string;
+  phone?: string;
+  role?: string; 
+  isActive?: boolean;
+  agenceId: number;
+  profilePictureUrl?: string;
 }
