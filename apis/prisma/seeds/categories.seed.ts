@@ -2,14 +2,14 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-async function main() {
+export async function seedCategories() {
   const categories = [
     {
       name: 'Consultation de médecine générale et préventive',
       subcategories: [
         'Consultations curatives générales',
-        'Actes d’infirmerie',
-        'Soins maternels et infantiles',
+        'Actes d’infirmerie( incision, suture, injection, transfusion, circoncision, pansement,….)',
+        'Soins maternels et infantiles et vaccinations liés aux CPN, et PN',
         'Autres actes préventifs',
       ],
     },
@@ -18,7 +18,7 @@ async function main() {
       subcategories: [
         'Soins dentaires',
         'Consultations en dermatologie',
-        'Consultations gynécologie',
+        'Consultations gynécologie (y compris non obstétrique)',
         'Consultations ophtalmologie',
         'Consultations pédiatriques',
         'Consultations psychiatriques',
@@ -52,7 +52,7 @@ async function main() {
     {
       name: 'Hospitalisation',
       subcategories: [
-        'Frais de lit',
+        'Frais de lit (en séjour ou en observation)',
         'Hospitalisation de jour',
         'Actes de chirurgie',
         'Autres actes internes',
@@ -77,15 +77,6 @@ async function main() {
         },
       },
     });
-    console.log(`✅ ${createdCategory.name} créée`);
   }
+  console.log(`✅ Catégories et actes créés avec succès`);
 }
-
-main()
-  .catch((e) => {
-    console.error('❌ Erreur lors du seed', e);
-    process.exit(1);
-  })
-  .finally(() => {
-    prisma.$disconnect();
-  });

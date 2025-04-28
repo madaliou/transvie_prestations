@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, Get, Delete, Param, ParseIntPipe, Put } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Get, Delete, Param, ParseIntPipe, Put, BadRequestException } from '@nestjs/common';
 import { PrestationService } from './prestation.service';
 import { CreatePrestationDto } from './dto/create-prestation.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -15,9 +15,11 @@ export class PrestationController {
     return this.prestationService.create(userId, dto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('kpis')
-  async getAllKpis() {
-  return this.prestationService.findAllWithDetails();
+  async getAllKpis(@Req() req) {
+  const userAgenceId = req.user.agenceId;
+  return this.prestationService.findAllWithDetails(userAgenceId);
 }
 
 @Get(':id')
