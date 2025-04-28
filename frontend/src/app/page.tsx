@@ -196,7 +196,6 @@ export default function Home() {
         if (id) router.push('/kpi')
 
         if (!id) {
-          console.log('je suis sans id')
           // Si création, reset form
           setDate("");
           setCout("");
@@ -390,6 +389,18 @@ export default function Home() {
 }
   </Select>
 </Form.Item>
+
+      <Form.Item
+          label="Ou Autre acte"
+          name="otherAct"
+          style={{ marginBottom: 0 }}
+        >
+          <Input
+            type="text"
+            value={otherAct }
+            onChange={(e) => setOtherAct(e.target.value)}
+          />
+        </Form.Item>
 
         <Form.Item
           label="Date"
