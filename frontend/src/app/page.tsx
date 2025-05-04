@@ -19,9 +19,9 @@ export default function Home() {
   const [successMessage, setSuccessMessage] = useState("");
   const [userName, setUserName] = useState<string>("");
   const [agencyName, setAgencyName] = useState<string>("");
-  //const [categoriesList, setCategoriesList] = useState<any[]>([]);
+  const [agencies, setAgencies] = useState<any[]>([]);
   const [subCategoriesList, setSubCategoriesList] = useState<any[]>([]);
-  //const [categoryId, setCategoryId] = useState("");
+  const [agenceId, setAgencyId] = useState<number | null>(null);
   const [subCategoryId, setSubCategoryId] = useState("");
   const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
   const [healthFacilityTypes, setHealthFacilityTypes] = useState<
@@ -62,6 +62,7 @@ export default function Home() {
     if (editData) {
       form.setFieldsValue({
         clientId: editData.clientId,
+        agenceId: editData.agenceId,
         healthFacilityTypeId: editData.healthFacilityTypeId,
         categoryId: editData.categoryId,
         subCategoryId: editData.actId,
@@ -76,6 +77,7 @@ export default function Home() {
       setCertificateNumber(editData.certificateNumber || "");
       setCout(editData.cout ? editData.cout.toString() : "");
       setClientId(String(editData.clientId));
+      setAgencyId(Number(editData.agenceId));
       setHealthFacilityTypeId(String(editData.healthFacilityTypeId));
       //setCategoryId(String(editData.categoryId));
     }
@@ -91,14 +93,9 @@ export default function Home() {
     if (user && user.firstname && user.lastname) {
       setUserName(`${user.firstname} ${user.lastname}`);
       setAgencyName(user.agencyName);
+      setAgencyId(Number(user.agenceId));
     }
-
-    /*const fetchCategoriesAndSubcategories = async () => {
-      const res = await fetch(`${base_url}/categories`);
-      const data = await res.json();
-      setCategoriesList(data);
-    };*/
-
+    
     const fetchSubcategories = async () => {
       const res = await fetch(`${base_url}/subcategories`);
       const data = await res.json();
@@ -132,16 +129,44 @@ export default function Home() {
       }
     };
 
-    const fetchHealthFacilityTypes = async () => {
-      const res = await fetch(`${base_url}/health-facility-types`);
-      const data = await res.json();
-      setHealthFacilityTypes(data);
+    const fetchAgencies = async () => {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        console.error("Token non disponible");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${base_url}/agences/country`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error(`Erreur HTTP: ${res.status}`);
+        }
+
+        const data = await res.json();
+        setAgencies(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des agences", error);
+      }
     };
+
+      const fetchHealthFacilityTypes = async () => {
+        const res = await fetch(`${base_url}/health-facility-types`);
+        const data = await res.json();
+        setHealthFacilityTypes(data);
+      };
 
     //fetchCategoriesAndSubcategories();
     fetchSubcategories();
     fetchClients();
     fetchHealthFacilityTypes();
+    fetchAgencies();
   }, [base_url, router]);
 
   /* useEffect(() => {
@@ -158,8 +183,10 @@ export default function Home() {
     const valuesCopy = { ...values };
     delete valuesCopy.categoryId;
     delete valuesCopy.subCategoryId;
+    
     const payload = {
       ...valuesCopy,
+      agenceId,
       actId: parseInt(subCategoryId),
       date,
       otherAct,
@@ -168,6 +195,8 @@ export default function Home() {
       clientId: Number(clientId),
       healthFacilityTypeId: Number(healthFacilityTypeId),
     };
+
+    console.log('Payload:', payload); // Pour déboguer
 
     const token = localStorage.getItem("access_token");
     const method = id ? "PUT" : "POST";
@@ -201,14 +230,14 @@ export default function Home() {
           setCout("");
           setCertificateNumber("");
           setOtherAct("");
-          //setCategoryId("");
+          setAgencyId(null);
           setSubCategoryId("");
           setClientId("");
           setHealthFacilityTypeId("");
           form.setFieldsValue({
             clientId: "",
             healthFacilityTypeId: "",
-            //categoryId: "",
+            agenceId: "",
             subCategoryId: "",
             date: "",
             otherAct: "",
@@ -222,7 +251,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Erreur réseau ou serveur");
+      toast.error("Une erreur est survenue lors de l'envoi des données");
     }
   };
 
@@ -275,12 +304,42 @@ export default function Home() {
         </div>
       )}
 
+
       <Form
         form={form}
         onFinish={handleSubmit}
         layout="vertical"
         style={styles.form}
       >
+
+
+<Form.Item
+          label={`Agence ou laisser vide pour votre agence par défaut`}
+          name="agenceId"
+          style={{ marginBottom: 0 }}
+        >
+          <Select
+            allowClear
+            showSearch
+            placeholder="Choisissez une agence ou laisser vide pour votreagence par défaut"  
+            style={{ width: "100%", marginRight: 20 }}
+            optionFilterProp="children"
+            value={agenceId || undefined}
+            onChange={(value) => setAgencyId(value ? Number(value) : null)}
+            filterOption={(input, option) =>
+              (option?.children as unknown as string)
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          >
+            {agencies.map((agency) => (
+              <Option key={agency.id} value={agency.id}>
+                {agency.name}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
         <Form.Item
           label={`Entreprise`}
           name="clientId"

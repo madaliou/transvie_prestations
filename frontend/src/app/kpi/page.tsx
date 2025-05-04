@@ -276,6 +276,13 @@ const handleConfirmDelete = async () => {
 
   const columns = [
     {
+      title: "Agence",
+      dataIndex: "agence",
+      key: "agence",
+      render: (_: any, record: any) => record.agence?.name ?? "-",
+      sorter: (a: any, b: any) => a.agence?.name.localeCompare(b.agence?.name),
+    },
+    {
       title: "Entreprise",
       dataIndex: "client",
       key: "client",

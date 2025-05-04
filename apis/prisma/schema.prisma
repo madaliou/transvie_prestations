@@ -16,6 +16,8 @@ model Country {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Client Client[]
 }
 
 model Agence {
@@ -24,7 +26,6 @@ model Agence {
   countryId   Int
   country     Country      @relation(fields: [countryId], references: [id])
   prestations Prestation[]
-  clients     Client[]
   users       User[]
   deletedAt   DateTime?
   isMain      Boolean      @default(false)
@@ -112,10 +113,10 @@ model HealthFacilityType {
 model Client {
   id          Int          @id @default(autoincrement())
   name        String       @unique
-  agenceId    Int
-  agence      Agence       @relation(fields: [agenceId], references: [id])
   prestations Prestation[]
   deletedAt   DateTime?
+  countryId   Int
+  country     Country      @relation(fields: [countryId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
