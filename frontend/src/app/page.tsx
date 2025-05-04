@@ -314,14 +314,14 @@ export default function Home() {
 
 
 <Form.Item
-          label={`Agence ou laisser vide pour votre agence par défaut`}
+          label={`Agence (Laissez ce champ vide si vous enregistrez des données pour votre agence)`}
           name="agenceId"
           style={{ marginBottom: 0 }}
         >
           <Select
             allowClear
             showSearch
-            placeholder="Choisissez une agence ou laisser vide pour votreagence par défaut"  
+            placeholder="Laissez ce champ vide si vous enregistrez des données pour votre agence"  
             style={{ width: "100%", marginRight: 20 }}
             optionFilterProp="children"
             value={agenceId || undefined}
