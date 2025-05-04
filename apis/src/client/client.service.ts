@@ -4,10 +4,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 @Injectable()
 export class ClientService {
     constructor(private prisma: PrismaService){}
-    async findAll(userAgencyId: number ) {
+    async findAll(userCountryId: number ) {
       return this.prisma.client.findMany({
         where: {
-          agenceId: userAgencyId,
+          countryId: userCountryId,
         },
         select: {
           id: true,
@@ -15,6 +15,15 @@ export class ClientService {
         },
         orderBy: {
           name: 'asc',
+        },
+      });
+    }
+
+    async createClient(data: { name: string; countryId: number }) {
+      return this.prisma.client.create({
+        data: {
+          name: data.name,
+          countryId: data.countryId,
         },
       });
     }

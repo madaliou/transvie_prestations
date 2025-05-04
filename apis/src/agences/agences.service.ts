@@ -13,7 +13,10 @@ export class AgencesService {
 
   findAll() {
     return this.prisma.agence.findMany({
-      include: { country: true },
+      select: {
+        id: true,
+        name: true,
+      },
       orderBy: {
         name: 'asc'
       }

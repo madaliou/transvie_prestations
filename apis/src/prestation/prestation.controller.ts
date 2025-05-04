@@ -32,11 +32,14 @@ export class PrestationController {
     return this.prestationService.delete(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
     @Param('id', ParseIntPipe) id: number,
+    @Req() req,
     @Body() dto: UpdatePrestationDto
   ) {
-    return this.prestationService.update(id, dto);
+    const userId = req.user.userId;
+    return this.prestationService.update(id, userId, dto);
   }
 }

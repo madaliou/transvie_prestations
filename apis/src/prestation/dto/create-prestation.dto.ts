@@ -3,6 +3,10 @@ import { IsOptional, IsNumber, IsString, IsDateString } from 'class-validator';
 export class CreatePrestationDto {
   @IsNumber()
   @IsOptional()
+  agenceId?: number;
+
+  @IsNumber()
+  @IsOptional()
   actId?: number;
 
   @IsDateString()
