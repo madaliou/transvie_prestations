@@ -1,3 +1,4 @@
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @next/next/no-img-element */
 'use client';
@@ -5,6 +6,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react'; // Tu peux aussi utiliser un SVG ou un emoji si tu préfères
+import ForgotPassword from '@/components/ForgotPassword';
+
+
 
 export default function Login() {
   const router = useRouter();
@@ -44,7 +48,7 @@ export default function Login() {
   return (
     <main style={styles.container}>
       <img src="/logo.webp" alt="Logo Transvie" style={styles.logo} />
-      <h2 style={styles.title}>Se connecter</h2>
+      <h2 style={styles.title}>Se Connecter</h2>
 
       {errorMessage && (
         <div style={styles.errorMessage}>
@@ -79,6 +83,7 @@ export default function Login() {
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </span>
+            <ForgotPassword />
           </div>
         </div>
 

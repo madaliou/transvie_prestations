@@ -11,6 +11,7 @@ import { PrestationModule } from './prestation/prestation.module';
 import { SubcategoryModule } from './subcategory/subcategory.module';
 import { HealthFacilityTypeModule } from './health-facility-type/health-facility-type.module';
 import { ClientModule } from './client/client.module';
+import { User } from './user/user.entity';
 
 @Module({
   imports: [UsersModule, PrismaModule, AgencesModule, CountryModule, CategoryModule, AuthModule, PrestationModule, SubcategoryModule, HealthFacilityTypeModule, ClientModule],

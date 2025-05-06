@@ -1,0 +1,1 @@
+fetch('http://localhost:3000/mail/send?to=walter.lynch56@ethereal.email');

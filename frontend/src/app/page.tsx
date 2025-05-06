@@ -8,8 +8,13 @@ import Link from "next/link";
 import { toast } from "react-toastify";
 import { Select, Form, Input, Button, Modal } from "antd";
 import { LogoutOutlined } from "@ant-design/icons";
+import ForgotPassword from '@/components/ForgotPassword';
+
+
 const { Option } = Select;
 //import Select from "react-select";
+
+
 
 export default function Home() {
   const router = useRouter();
@@ -35,7 +40,7 @@ export default function Home() {
 
   
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  const id = searchParams?.get("id") ?? null;
 
   const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
   
